@@ -25,10 +25,16 @@ let userCustomizedCharacter = false, customizationGuideShown = false;
 let yaw = .42, pitch = .10, zoom = 1, drag = null, toastTimer = 0, randomizeCount = 0;
 let firstShowSpinFrame = 0;
 const stopIntroSpin = () => { if(firstShowSpinFrame) cancelAnimationFrame(firstShowSpinFrame); firstShowSpinFrame=0; };
+function syncFrontAngle(){
+  document.querySelectorAll('[data-angle]').forEach(button=>{
+    button.classList.toggle('active',button.dataset.angle==='0');
+  });
+}
 function startIntroSpin(){
   stopIntroSpin();
-  const target=1.18;
-  if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches){yaw=target;draw();return;}
+  // One full introduction spin, finishing directly front-facing (yaw = 0).
+  const target=0;
+  if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches){yaw=target;pitch=.08;syncFrontAngle();draw();return;}
   const start=performance.now(),duration=1800,initial=.42;
   const frame=now=>{
     if($('studio-grid').hidden){stopIntroSpin();return;}
@@ -37,7 +43,7 @@ function startIntroSpin(){
     yaw=initial+(Math.PI*2+target-initial)*eased;
     renderMesh(canvas,ctx,state);
     firstShowSpinFrame=t<1?requestAnimationFrame(frame):0;
-    if(t===1){yaw=target;draw();}
+    if(t===1){yaw=target;pitch=.08;syncFrontAngle();draw();}
   };
   firstShowSpinFrame=requestAnimationFrame(frame);
 }
