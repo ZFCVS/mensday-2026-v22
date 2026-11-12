@@ -41,9 +41,9 @@
       <div id="profile-step">
         <section class="recipient-card" aria-labelledby="recipient-heading">
           <span class="form-step">START HERE · BOTH NAMES REQUIRED</span><h2 id="recipient-heading">Who is this card for—and who is sending it?</h2>
-          <div class="name-input-grid"><div class="name-field"><label class="field-label" for="recipient-input">Recipient’s name</label><input class="text-input recipient-field" id="recipient-input" maxlength="50" placeholder="Enter the recipient’s name" autocomplete="off"></div>
-          <div class="name-field"><label class="field-label" for="sender-input">Your name · sender</label><input class="text-input recipient-field" id="sender-input" maxlength="50" placeholder="Enter your name" autocomplete="name"></div></div>
-          <p class="field-hint">Both names will appear on the card. You’ll need them before moving to the qualities.</p>
+          <div class="name-input-grid"><div class="name-field"><label class="field-label" for="recipient-input">Recipient’s name</label><input class="text-input recipient-field" id="recipient-input" maxlength="50" placeholder="Enter the recipient’s name" autocomplete="off" aria-describedby="recipient-name-warning"><small class="name-validation-message" id="recipient-name-warning" aria-live="polite"></small></div>
+          <div class="name-field"><label class="field-label" for="sender-input">Your name · sender</label><input class="text-input recipient-field" id="sender-input" maxlength="50" placeholder="Enter your name" autocomplete="name" aria-describedby="sender-name-warning"><small class="name-validation-message" id="sender-name-warning" aria-live="polite"></small></div></div>
+          <p class="field-hint">Enter names only (letters, spaces, apostrophes or hyphens). Email addresses and domains are not allowed.</p>
         </section>
         <div class="profile-hero">
           <div><p class="eyebrow">A CHARACTER BUILT AROUND PERSONALITY</p><h2 id="profile-title">What makes this person special?</h2>
