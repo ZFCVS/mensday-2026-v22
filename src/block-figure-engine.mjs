@@ -460,7 +460,10 @@ export function buildFigureGeometry(input = {}) {
     add('zf_placket',0,3.78,.53,.08,.42,.07,shade(top,-.10),'details');
     // The supplied logo is projected onto shirt fabric without a badge or adjustable placement.
     const zfZ=s.outfit==='zf-polo-navy'?.56:.605;
-    add('zf_brand_patch',.58,3.76,zfZ,.38,.30,.045,top,'branding');
+    // Keep the official mark clearly visible on the wearer's left chest in both
+    // the editor and the exported card views. The original patch sat too close
+    // to the shoulder and could disappear behind arm silhouettes in some poses.
+    add('zf_brand_patch',.42,3.78,zfZ,.44,.34,.05,top,'branding');
   } else if (s.outfit === 'traditional-kurta') {
     add('kurta_body',0,3.06,.06,torsoW*.94,2.18,.88,top,'top');
     add('kurta_placket',0,3.72,.52,.11,.53,.055,accent,'details');
@@ -575,12 +578,18 @@ export function buildFigureGeometry(input = {}) {
   const eyeDim=expressiveEyes[s.expression]||({classic:[.22,.16],round:[.18,.19],narrow:[.25,.10],wide:[.25,.19]}[s.eyeShape]);
   const browDim={natural:[.29,.075],bold:[.31,.11],raised:[.29,.075],angled:[.29,.075]}[s.browStyle];
   const noseScale=s.noseScale/100, smile=s.smileIntensity/100;
+  const blink=clamp(Number(s.blink)||0,0,1);
   [-1,1].forEach(side=>{
     const playfulEyeDim=s.expression==='playful'&&side<0?[.25,.105]:eyeDim;
     const delighted=['excited','joyful','astonished','surprised'].includes(s.expression);
-    add('eye_white_'+side,side*eyeX,eyeY,faceZ,playfulEyeDim[0]*H,playfulEyeDim[1]*H,.085,'#FFF8E9','eyes');
-    add('iris_'+side,side*eyeX,eyeY,faceZ+.053,delighted?.09:.075,delighted?.105:.09,.035,s.eyeColor,'eyes');
-    add('pupil_'+side,side*eyeX,eyeY,faceZ+.078,.04,.055,.022,'#171A25','eyes');
+    const openEyeWidth=playfulEyeDim[0]*H;
+    const openEyeHeight=playfulEyeDim[1]*H;
+    const blinkEyeHeight=Math.max(.026,openEyeHeight*(1-blink*.94));
+    add('eye_white_'+side,side*eyeX,eyeY,faceZ,openEyeWidth,blinkEyeHeight,.085,'#FFF8E9','eyes');
+    if(blink<.7){
+      add('iris_'+side,side*eyeX,eyeY,faceZ+.053,delighted?.09:.075,Math.max(.03,(delighted?.105:.09)*(1-blink*.9)),.035,s.eyeColor,'eyes');
+      add('pupil_'+side,side*eyeX,eyeY,faceZ+.078,.04,Math.max(.02,.055*(1-blink*.9)),.022,'#171A25','eyes');
+    }
     const browLift=['excited','joyful','astonished','surprised'].includes(s.expression)?.085:0;
     const browY=eyeY+.18*H+(s.browStyle==='raised'?.05:0)+browLift*H;
     const angled=['angled','focused'].includes(s.browStyle)||['focused','determined'].includes(s.expression);

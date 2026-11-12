@@ -131,6 +131,27 @@ function transformed(p, a, b) {
   const depth = y * Math.sin(b) + zz * Math.cos(b);
   return [xx, yy, depth];
 }
+function projectPoint(point, frame=CARD_CHARACTER_FRAME){
+  const [xx,yy]=transformed(point,frame.yaw,frame.pitch);
+  return [frame.cx + xx * frame.scale, frame.ground - yy * frame.scale];
+}
+function getCardPoloLogoPlacement(figureState, frame=CARD_CHARACTER_FRAME){
+  if(!(figureState.outfit==='zf-polo-white' || figureState.outfit==='zf-polo-navy')) return null;
+  const patch=buildFigureGeometry(figureState).parts.find(part=>part.name==='zf_brand_patch');
+  if(!patch) return null;
+  const projected=patch.vertices.map(point=>projectPoint(point, frame));
+  const center=projected.reduce((acc,[x,y])=>[acc[0]+x,acc[1]+y],[0,0]).map(value=>value/4);
+  const width=(Math.hypot(projected[1][0]-projected[0][0], projected[1][1]-projected[0][1]) + Math.hypot(projected[2][0]-projected[3][0], projected[2][1]-projected[3][1]))/2;
+  const height=(Math.hypot(projected[3][0]-projected[0][0], projected[3][1]-projected[0][1]) + Math.hypot(projected[2][0]-projected[1][0], projected[2][1]-projected[1][1]))/2;
+  return { x:center[0], y:center[1], size:Math.max(20, Math.min(32, Math.max(width,height)*1.08)), variant:figureState.outfit==='zf-polo-white'?'blue':'white' };
+}
+function blinkAtFrame(index, frameCount){
+  const closeEnough=(target,width=1)=>Math.abs(index-target)<=width;
+  if(closeEnough(Math.round(frameCount*0.22),1) || closeEnough(Math.round(frameCount*0.66),1)){
+    return Math.abs(index-Math.round(frameCount*(index<frameCount*0.5?0.22:0.66)))===0 ? 1 : 0.55;
+  }
+  return 0;
+}
 function renderMesh(target, targetCtx, figureState, options = {}) {
   const { w, h } = options.fixedResolution ? {w:target.width,h:target.height} : fitCanvas(target), dpr = target === canvas ? Math.min(window.devicePixelRatio || 1, 2) : 1;
   targetCtx.setTransform(1,0,0,1,0,0);
@@ -547,11 +568,15 @@ function paintShareCard(target,context,qr=currentQrMatrix,animation=null){
     if(powerLines.length>2){powerLines=powerLines.slice(0,2);powerLines[1]=powerLines[1].replace(/[.,;:]?$/,'…');}
     powerLines.forEach((line,index)=>context.fillText(line,box.x+17,box.y+56+index*22));
   }
-  const characterFrame=animation?.capePhase===undefined?state:{...state,heroCapePhase:animation.capePhase};
+  const characterFrame=(animation?.capePhase===undefined && animation?.blink===undefined)
+    ? state
+    : {...state, ...(animation?.capePhase===undefined?{}:{heroCapePhase:animation.capePhase}), ...(animation?.blink===undefined?{}:{blink:animation.blink})};
   // The collectible card uses a fixed, fit-safe camera. This keeps raised hands,
   // capes and tallest hair below the title while placing the shoes on the left
   // forecourt, clear of the turbine, right-side power panel and vehicle lane.
   renderMesh(target,context,characterFrame,{preserveBackground:true,fixedResolution:true,...CARD_CHARACTER_FRAME,shadowScale:.25});
+  const poloLogoPlacement=getCardPoloLogoPlacement(characterFrame,CARD_CHARACTER_FRAME);
+  if(poloLogoPlacement) drawOfficialLogo(context,poloLogoPlacement.x,poloLogoPlacement.y,poloLogoPlacement.size,poloLogoPlacement.variant,poloLogoPlacement.variant==='white');
   context.beginPath();context.moveTo(56,953);context.lineTo(1022,953);context.strokeStyle='#7E7B76';context.lineWidth=1.4;context.stroke();
   context.fillStyle='#D84F1D';context.font=`500 17px ${PROMETO_FAMILY}`;context.letterSpacing='1.1px';context.fillText(`FOR ${recipientName?recipientName.toUpperCase():'SOMEONE WHO SHINES'}`,56,979);
   context.fillStyle='#5D6263';context.font=`500 14px ${PROMETO_FAMILY}`;context.textAlign='right';context.fillText('CHARACTER PROFILE · ZF MOBILITY',1022,979);context.textAlign='start';
@@ -603,7 +628,8 @@ async function createAnimatedGifBlob(){
     const motion=roadMotionAtFrame(index,frameCount,direction);
     const capePhase=Math.sin(motion.phase*Math.PI*2);
     const rotorAngle=windTurbinePhaseAtFrame(index,frameCount,1);
-    paintShareCard(source,sourceContext,currentQrMatrix,{motion,capePhase,rotorAngle});
+    const blink=blinkAtFrame(index,frameCount);
+    paintShareCard(source,sourceContext,currentQrMatrix,{motion,capePhase,rotorAngle,blink});
     frameContext.clearRect(0,0,width,height);frameContext.drawImage(source,0,0,width,height);
     return frameContext.getImageData(0,0,width,height).data;
   };
