@@ -1,0 +1,16 @@
+GOOD MEN STUDIO — RUN LOCALLY ON WINDOWS
+
+1. Extract the ZIP to a folder.
+2. Open that folder in File Explorer.
+3. Click the address bar, type cmd, and press Enter.
+4. In Command Prompt, type:  py -m http.server 8080
+5. Leave Command Prompt open and open this address in Edge or Chrome:
+   http://localhost:8080
+
+The Python launcher is `py`. Do not use `python` if Windows redirects it to
+the Microsoft Store. If port 8080 is busy, run `py -m http.server 8081` and
+open http://localhost:8081 instead.
+
+The QR code needs a phone-accessible app address. `localhost` only works on
+this computer. For a phone on the same Wi-Fi, use the computer's LAN address;
+for sharing outside the network, publish the app to a public HTTPS address.

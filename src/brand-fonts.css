@@ -1,0 +1,14 @@
+@font-face{
+  font-family:'ZF Prometo';
+  src:url('../assets/brand/fonts/ZFPrometo_W_Lt.woff2') format('woff2');
+  font-style:normal;
+  font-weight:300;
+  font-display:swap;
+}
+@font-face{
+  font-family:'ZF Prometo';
+  src:url('../assets/brand/fonts/ZFPrometo_W_Md.woff2') format('woff2');
+  font-style:normal;
+  font-weight:500;
+  font-display:swap;
+}
