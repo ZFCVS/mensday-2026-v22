@@ -154,11 +154,16 @@ function getCardPoloLogoPlacement(figureState, frame=CARD_CHARACTER_FRAME){
   if(!(figureState.outfit==='zf-polo-white' || figureState.outfit==='zf-polo-navy')) return null;
   const patch=buildFigureGeometry(figureState).parts.find(part=>part.name==='zf_brand_patch');
   if(!patch) return null;
-  const projected=patch.vertices.map(point=>projectPoint(point, frame));
-  const center=projected.reduce((acc,[x,y])=>[acc[0]+x,acc[1]+y],[0,0]).map(value=>value/4);
-  const width=(Math.hypot(projected[1][0]-projected[0][0], projected[1][1]-projected[0][1]) + Math.hypot(projected[2][0]-projected[3][0], projected[2][1]-projected[3][1]))/2;
-  const height=(Math.hypot(projected[3][0]-projected[0][0], projected[3][1]-projected[0][1]) + Math.hypot(projected[2][0]-projected[1][0], projected[2][1]-projected[1][1]))/2;
-  return { x:center[0], y:center[1], size:Math.max(20, Math.min(32, Math.max(width,height)*1.08)), variant:figureState.outfit==='zf-polo-white'?'blue':'white' };
+  // The chest decal is on the FRONT face (vertices 4–7). Previous code
+  // summed all eight corners but divided by four, doubling x/y and placing
+  // the logo in the card's MESSAGE area instead of on the shirt.
+  const face=patch.vertices.slice(4,8).map(point=>projectPoint(point,frame));
+  const [x,y]=face.reduce(([sx,sy],[px,py])=>[sx+px,sy+py],[0,0]).map(v=>v/face.length);
+  const width=(Math.hypot(face[1][0]-face[0][0], face[1][1]-face[0][1]) + Math.hypot(face[2][0]-face[3][0], face[2][1]-face[3][1]))/2;
+  const height=(Math.hypot(face[3][0]-face[0][0], face[3][1]-face[0][1]) + Math.hypot(face[2][0]-face[1][0], face[2][1]-face[1][1]))/2;
+  // Export scene artwork ends at y=953; an off-shirt logo must never be drawn.
+  if(!Number.isFinite(x)||!Number.isFinite(y)||y<360||y>850||x<60||x>570)return null;
+  return { x,y, size:Math.max(20, Math.min(32, Math.max(width,height)*1.08)), variant:figureState.outfit==='zf-polo-white'?'blue':'white' };
 }
 function blinkAtFrame(index, frameCount){
   const closeEnough=(target,width=1)=>Math.abs(index-target)<=width;
@@ -940,42 +945,33 @@ function shareCard(){
   shareDelivery.prepare().catch(error=>{if(error.name==='StaleShareError')queueSharePreparation();});
 }
 function openOutlookWebDraft(){
-  // Outlook compose deep links accept plain text only. Use the rich clipboard
-  // message to preserve the two labelled hyperlinks on paste instead of
-  // placing an unreadably long URL in the Outlook body.
+  // A compose deep link is plain text, not HTML. Prefill the entire message
+  // synchronously on the user's click. Outlook will usually auto-link the two
+  // full https URLs. Custom display labels are available via Copy formatted email.
   const note=$('share-preparation-note');
   let message;
   try { message=currentEmailMessage(); }
   catch(error){if(note)note.textContent='Card link unavailable: '+error.message;return;}
   const subject=cardShareSubject();
-  const subjectOnly='https://outlook.office.com/mail/deeplink/compose?subject='+encodeURIComponent(subject);
-  const plainDraft=subjectOnly+'&body='+encodeURIComponent(message.plain);
-  // Open synchronously in the user's click handler to avoid popup blockers.
-  const popup=window.open('about:blank','_blank');
-  if(!popup){
-    if(note)note.textContent='Your browser blocked Outlook. Allow pop-ups, then try Share via Outlook again.';
+  const base='https://outlook.office.com/mail/deeplink/compose?subject='+encodeURIComponent(subject);
+  const draft=base+'&body='+encodeURIComponent(message.plain);
+  // Navigation occurs immediately inside the click handler, preventing the
+  // previous clipboard-promise/popup timing problem.
+  if(draft.length>6500){
+    // For an unusually long card URL, opening subject-only without saying why
+    // is worse than offering a deliberate manual rich-text fallback.
+    if(note)note.textContent='This card link is unusually long. Use “Preview email text” to copy the full message, then open Outlook and paste it.';
     return;
   }
-  const openDraft=(url)=>{try{if(!popup.closed)popup.location.replace(url);}catch{}};
-  if(note)note.textContent='Preparing two clickable links for Outlook…';
-  let copied;
-  try{copied=copyEmailMessage(navigator.clipboard,globalThis.ClipboardItem,message);}
-  catch(error){copied=Promise.reject(error);}
-  Promise.resolve(copied).then(()=>{
-    openDraft(subjectOnly);
-    if(note)note.textContent='Outlook opened. Click inside the blank message and paste (Ctrl+V). Your greeting and both clickable labels are copied.';
-  }).catch(()=>{
-    // Preserve the working one-click experience when clipboard permissions
-    // are denied. Plain URLs are still valid and often clickable in Outlook.
-    if(plainDraft.length<=5000){
-      openDraft(plainDraft);
-      if(note)note.textContent='Formatted copy was blocked. Outlook opened with your full greeting and both original URLs instead.';
-    }else{
-      openDraft(subjectOnly);
-      if(note)note.textContent='Formatted copy was blocked. Open “Preview email text” and copy it into the Outlook draft; this card URL is too long for reliable automatic prefilling.';
-    }
-  });
+  const popup=window.open(draft,'_blank');
+  if(popup){
+    try{popup.opener=null;}catch{}
+    if(note)note.textContent='Outlook opened with your subject, greeting and both card links. Enter the recipient and send.';
+  }else if(note){
+    note.textContent='Your browser blocked Outlook. Allow pop-ups for this website and click Share via Outlook again.';
+  }
 }
+
 function downloadPreparedAttachment(extension){
   const prepared=shareDelivery.getReady();
   const note=$('share-preparation-note');
