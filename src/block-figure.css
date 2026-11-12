@@ -474,3 +474,8 @@ body{font-size:16px;background:radial-gradient(ellipse at 50% -12%,#fff 0,#F4F8F
   #share-dialog.share-modern .share-attachment-actions,#share-dialog.share-modern .share-more-controls{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){#share-dialog.share-modern *{transition:none!important}}
+
+/* Name-only privacy validation */
+.name-validation-message{display:block;margin-top:6px;color:#a32a24;font-size:12px;line-height:1.4;font-weight:500;}
+.name-validation-message:empty{display:none;}
+.name-field .text-input[aria-invalid="true"]{border-color:#b43a34;box-shadow:0 0 0 2px rgba(180,58,52,.10);}

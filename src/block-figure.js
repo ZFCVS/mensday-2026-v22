@@ -9,6 +9,7 @@ import { encodeShareToken, decodeShareToken } from './share-card-token.mjs';
 import { recordCardDownload } from './wish-counter.mjs';
 import { createShareDelivery } from './share-delivery.mjs';
 import { buildEmailMessage, copyEmailMessage } from './email-message.mjs';
+import { validatePersonalName } from './name-validation.mjs';
 
 const STORAGE_KEY = 'goodmen.block-figure.draft.v2';
 const SHARE_BASE_STORAGE_KEY = 'goodmen.block-figure.share-base.v1';
@@ -32,18 +33,26 @@ function syncFrontAngle(){
 }
 function startIntroSpin(){
   stopIntroSpin();
-  // One full introduction spin, finishing directly front-facing (yaw = 0).
-  const target=0;
-  if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches){yaw=target;pitch=.08;syncFrontAngle();draw();return;}
-  const start=performance.now(),duration=1800,initial=.42;
+  // The character's actual front is yaw=0. Run exactly 360 degrees and
+  // normalize the camera to zero at the end (never leave it at a side angle).
+  const front=0;
+  pitch=.08;
+  if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches){yaw=front;syncFrontAngle();draw();return;}
+  const startedAt=performance.now(),duration=2000;
+  yaw=front;
+  syncFrontAngle();
   const frame=now=>{
     if($('studio-grid').hidden){stopIntroSpin();return;}
-    const t=Math.min(1,(now-start)/duration);
-    const eased=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
-    yaw=initial+(Math.PI*2+target-initial)*eased;
+    const t=Math.min(1,(now-startedAt)/duration);
+    if(t>=1){
+      firstShowSpinFrame=0;
+      yaw=front;pitch=.08;syncFrontAngle();draw();
+      return;
+    }
+    const eased=t*t*(3-2*t);
+    yaw=front+Math.PI*2*eased;
     renderMesh(canvas,ctx,state);
-    firstShowSpinFrame=t<1?requestAnimationFrame(frame):0;
-    if(t===1){yaw=target;pitch=.08;syncFrontAngle();draw();}
+    firstShowSpinFrame=requestAnimationFrame(frame);
   };
   firstShowSpinFrame=requestAnimationFrame(frame);
 }
@@ -739,11 +748,58 @@ async function copyShareLink(noteId='share-link-note'){
   toast('Personalized card link copied.');
   return true;
 }
+function getNameValidationProblem(){
+  for(const [id,label] of [['recipient-input','recipient'],['sender-input','sender']]){
+    const result=validatePersonalName($(id)?.value ?? (id==='recipient-input'?recipientName:senderName));
+    if(!result.valid)return {id,label,reason:result.reason};
+  }
+  return null;
+}
+function setNameValidationNote(id,message=''){
+  const note=$(id==='recipient-input'?'recipient-name-warning':'sender-name-warning');
+  if(note)note.textContent=message;
+  const field=$(id);
+  if(field)field.setAttribute('aria-invalid',message?'true':'false');
+}
+function registerNameInput(id){
+  const field=$(id);let accepted='';
+  field.addEventListener('beforeinput',event=>{
+    // Prevent forbidden characters before they appear; paste is validated as a whole below.
+    if(event.inputType?.startsWith('insert')&&event.data && /[@.\d:/\\?&#]/u.test(event.data)){
+      event.preventDefault();setNameValidationNote(id,'Names only — email addresses and domain names are not allowed.');
+    }
+  });
+  field.addEventListener('paste',event=>{
+    const pasted=event.clipboardData?.getData('text')??'';
+    const proposed=field.value.slice(0,field.selectionStart??field.value.length)+pasted+field.value.slice(field.selectionEnd??field.value.length);
+    // Disallow invalid or email-like pastes completely, rather than turning a
+    // pasted email into a misleading name by stripping @ or punctuation.
+    if(!validatePersonalName(proposed).valid){event.preventDefault();setNameValidationNote(id,'Paste a name only, not an email address or website.');}
+  });
+  field.addEventListener('input',()=>{
+    const proposed=field.value;
+    if(proposed && !/^[\p{L}\p{M} '’-]*$/u.test(proposed)){
+      field.value=accepted;setNameValidationNote(id,'Names only — no @, email address, domain, dots, digits or symbols.');
+    }else{
+      accepted=field.value;
+      setNameValidationNote(id,'');
+    }
+    if(id==='recipient-input')recipientName=field.value.slice(0,50);
+    else senderName=field.value.slice(0,50);
+    updateProfileReadiness();updateScoreReadiness();
+  });
+  field.addEventListener('blur',()=>{
+    if(field.value.trim()&&!validatePersonalName(field.value).valid){
+      setNameValidationNote(id,validatePersonalName(field.value).reason);
+    }
+  });
+}
 function requireSender(){
-  if(recipientName.trim()&&senderName.trim())return true;
-  const missing=!recipientName.trim()?'recipient-input':'sender-input';
-  toast('Add both names on the first step before downloading or sharing.');
-  $(missing)?.focus();
+  const problem=getNameValidationProblem();
+  if(!problem){recipientName=$('recipient-input').value.trim();senderName=$('sender-input').value.trim();return true;}
+  setNameValidationNote(problem.id,problem.reason);
+  toast(problem.reason);
+  $(problem.id)?.focus();
   return false;
 }
 function safeUtf16Prefix(value,maxLength){
@@ -815,6 +871,7 @@ async function openMobileShare(token){
   try{
     const payload=await decodeShareToken(token);
     if(!payload || typeof payload.recipient!=='string' || typeof payload.sender!=='string')throw Error('Invalid card details.');
+    if(!validatePersonalName(payload.recipient).valid || !validatePersonalName(payload.sender).valid)throw Error('This card contains an invalid recipient or sender name.');
     cardShareId=String(payload.id||createCardShareId());
     state=normalizeFigure(payload.figure);recipientName=String(payload.recipient||'').slice(0,50);senderName=String(payload.sender||'A friend').slice(0,50);
     yaw=Number(payload.camera?.yaw??.42);pitch=Number(payload.camera?.pitch??.10);zoom=Number(payload.camera?.zoom??1);
@@ -1081,7 +1138,7 @@ function renderHeroVariations() {
   });
 }
 function updateProfileReadiness() {
-  const namesReady=Boolean(String($('recipient-input').value||'').trim()&&String($('sender-input').value||'').trim());
+  const namesReady=!getNameValidationProblem();
   const ready=selectedQualities.length===5&&namesReady;
   $('continue-to-scores').disabled=false;
   $('continue-to-scores').setAttribute('aria-describedby','profile-ready-note');
@@ -1093,7 +1150,7 @@ function updateProfileReadiness() {
 }
 function updateScoreReadiness(){
   const count=selectedQualities.filter(q=>scoreTouched.has(q.trait)).length;
-  const ready=selectedQualities.length===5&&count===5&&recipientName.trim()&&senderName.trim();
+  const ready=selectedQualities.length===5&&count===5&&!getNameValidationProblem();
   $('generate-characters').disabled=false;
   $('generate-characters').setAttribute('aria-describedby','score-ready-note');
   $('score-progress-label').textContent=`${count} of 5 adjusted`;
@@ -1116,6 +1173,13 @@ function showScoreStep(){
     const message=missingRecipient&&missingSender?'Enter the recipient’s name and your name before continuing.':missingRecipient?'Enter the recipient’s name (the person receiving the card).':'Enter your name (the sender of the card).';
     $('profile-error').textContent=message;
     guidePopup('A name is missing',message,'Enter name',()=>focusInput(missingRecipient?'recipient-input':'sender-input'));
+    return;
+  }
+  const problem=getNameValidationProblem();
+  if(problem){
+    $('profile-error').textContent=problem.reason;
+    setNameValidationNote(problem.id,problem.reason);
+    guidePopup('Please enter a name',problem.reason,'Correct the name',()=>focusInput(problem.id));
     return;
   }
   if(selectedQualities.length!==5){
@@ -1167,7 +1231,8 @@ function generateOptions(preferredGallery='power') {
   try {
     $('profile-error').textContent='';
     recipientName=$('recipient-input').value.trim();senderName=$('sender-input').value.trim();
-    if(!recipientName.trim()||!senderName.trim()) throw new Error('Enter both names to continue.');
+    const problem=getNameValidationProblem();
+    if(problem)throw new Error(problem.reason);
     if(selectedQualities.length!==5) throw new Error('Choose exactly five different qualities to continue.');
     const remaining=selectedQualities.filter(q=>!scoreTouched.has(q.trait));
     if(remaining.length){
@@ -1193,7 +1258,7 @@ function chooseVariation(variation) {
   state=normalizeFigure({...selectedBase,greeting:generatedGreeting});
   $('share-recipient-display').textContent=recipientName;$('share-sender-display').textContent=senderName;$('greeting').value=state.greeting;
   $('personality-gate').hidden=true;$('studio-grid').hidden=false;$('studio-actions').hidden=false;$('share-panel').hidden=true;
-  $('studio-grid').classList.remove('message-active');undoStack=[];redoStack=[];yaw=.42;pitch=.10;zoom=1;setFlowStep(3);
+  $('studio-grid').classList.remove('message-active');undoStack=[];redoStack=[];yaw=0;pitch=.08;zoom=1;syncFrontAngle();setFlowStep(3);
   userCustomizedCharacter=false;
   syncControls();draw();
   if(!customizationGuideShown){
@@ -1293,8 +1358,8 @@ setupExclusiveAccordions();renderTraitSelector();renderScoreControls();
 $('continue-to-scores').addEventListener('click',showScoreStep);
 $('back-to-qualities').addEventListener('click',showProfile);
 $('generate-characters').addEventListener('click',generateOptions);
-$('recipient-input').addEventListener('input',event=>{recipientName=event.target.value.slice(0,50);updateProfileReadiness();updateScoreReadiness();});
-$('sender-input').addEventListener('input',event=>{senderName=event.target.value.slice(0,50);if(senderName!==event.target.value)event.target.value=senderName;updateProfileReadiness();updateScoreReadiness();});
+registerNameInput('recipient-input');
+registerNameInput('sender-input');
 $('trait-search').addEventListener('input',renderTraitSelector);
 $('trait-category').addEventListener('change',renderTraitSelector);
 $('edit-profile').addEventListener('click',showProfile);
@@ -1381,6 +1446,7 @@ $('state-file').addEventListener('change',async event=>{
     heroGenerated=getSuperheroEligibility(scoredQualities).unlocked
       ? generateSuperheroVariations(scoredQualities,state.personalityProfile?.seed||0,state)
       : null;
+    if(!validatePersonalName(loaded.recipient).valid || !validatePersonalName(loaded.sender).valid)throw Error('Saved names must be personal names, not email addresses or domains.');
     recipientName=String(loaded.recipient||'').slice(0,50);senderName=String(loaded.sender||'').slice(0,50);selectedBase=clone(state);generatedGreeting=state.greeting;
     scoreTouched=new Set(scoredQualities.map(q=>q.trait));
     $('recipient-input').value=recipientName;$('sender-input').value=senderName;renderTraitSelector();renderScoreControls();
