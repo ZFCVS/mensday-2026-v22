@@ -100,8 +100,8 @@ const FACE_DEF = [
 ];
 const poseNames = {
   idle: 'EASY STANCE', wave: 'WAVE HELLO', 'thumbs-up': 'THUMBS-UP', 'hands-on-hips': 'HANDS ON HIPS',
-  'crossed-arms': 'CONFIDENT ARMS', 'hands-behind-back': 'HANDS CLASPED BEHIND BACK', flex: 'FLEX', victory: 'VICTORY', welcome: 'OPEN WELCOME', dance: 'CELEBRATE',
-  'hand-over-heart':'HAND OVER HEART','hands-clasped-front':'HANDS CLASPED IN FRONT',salute:'SALUTE','both-wave':'BOTH HANDS WAVE',pointing:'POINTING GESTURE',peace:'PEACE SIGN','wide-stance':'WIDE STANCE','relaxed-lean':'RELAXED ONE-LEG STANCE'
+  flex: 'FLEX', victory: 'VICTORY', welcome: 'OPEN WELCOME', dance: 'CELEBRATE',
+  'hand-over-heart':'HAND OVER HEART','both-wave':'BOTH HANDS WAVE',pointing:'POINTING GESTURE',peace:'PEACE SIGN','wide-stance':'WIDE STANCE','relaxed-lean':'RELAXED ONE-LEG STANCE'
 };
 const LOOK_PRESETS = Object.freeze({
   'zf-white': {outfit:'zf-polo-white',bottoms:'chinos',footwear:'sneaker',bagStyle:'sling-bag',sunglassesStyle:'aviator',headphonesStyle:'studio',accentColor:'#0A4D91'},
@@ -1232,7 +1232,7 @@ function randomizeCharacter() {
     age:Math.floor(18+rng()*63),build:pick(['lean','average','athletic','broad','stocky']),height:Math.floor(160+rng()*46),headSize:Math.floor(82+rng()*41),shoulders:Math.floor(82+rng()*41),legRatio:Math.floor(85+rng()*31),belly:Math.floor(rng()*61),
     armLength:Math.floor(80+rng()*41),armMuscle:Math.floor(70+rng()*61),legMuscle:Math.floor(70+rng()*61),handSize:Math.floor(80+rng()*46),
     outfit:state.heroMode?'hero-suit':pick(['tee','overshirt','casual-shirt','sweater','cardigan','denim-jacket','zip-jacket','hoodie','bomber','blazer','utility','jersey','zf-polo-white','zf-polo-navy','traditional-kurta']),bottoms:pick(['jeans','cargo','chinos','joggers','shorts','formal-trousers','track-pants']),footwear:state.heroMode?'boot':pick(['sneaker','high-top','boot','loafer','dress-shoe']),
-    pose:pick(['idle','wave','thumbs-up','hands-on-hips','crossed-arms','hands-behind-back','flex','victory','welcome','dance','hand-over-heart','hands-clasped-front','salute','both-wave','pointing','peace','wide-stance','relaxed-lean']),handStyle:pick(['open','fist','thumbs-up','peace','point','mitten']),glasses:rng()>.5,sunglassesStyle:pick(['none','wayfarer','aviator','round','sport','oversized']),cap:rng()>.5,headwearStyle:pick(['none','beanie','brimmed-hat']),headphonesStyle:pick(['none','studio','wireless','sport','neckband']),bagStyle:pick(['none','backpack','shoulder-bag','sling-bag']),watch:rng()>.5,pin:rng()>.5,
+    pose:pick(['idle','wave','thumbs-up','hands-on-hips','flex','victory','welcome','dance','hand-over-heart','both-wave','pointing','peace','wide-stance','relaxed-lean']),handStyle:pick(['open','fist','thumbs-up','peace','point','mitten']),glasses:rng()>.5,sunglassesStyle:pick(['none','wayfarer','aviator','round','sport','oversized']),cap:rng()>.5,headwearStyle:pick(['none','beanie','brimmed-hat']),headphonesStyle:pick(['none','studio','wireless','sport','neckband']),bagStyle:pick(['none','backpack','shoulder-bag','sling-bag']),watch:rng()>.5,pin:false,
     topColor:pick(['#176A76','#244F91','#674EA3','#2369D4','#8B4D99','#2F675E']),accentColor:pick(['#F17B63','#F2A34A','#63B6A3','#F5C95D','#D8B579']),background:pick(['#F4F1EB','#E8F0F6','#F2E8E5','#EAF1E6']),
   };
   if(state.heroMode){

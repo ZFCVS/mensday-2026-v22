@@ -15,7 +15,7 @@ export const DEFAULT_FIGURE = Object.freeze({
   headwearStyle: 'none', sunglasses: false, sunglassesStyle: 'none',
   build: 'athletic', headShape: 'classic', hairstyle: 'quiff', beard: 'short', expression: 'smile',
   outfit: 'overshirt', bottoms: 'cargo', footwear: 'high-top', pose: 'wave', handStyle: 'open',
-  glasses: false, cap: false, headphones: false, headphonesStyle: 'none', backpack: false, bagStyle: 'none', watch: true, pin: true,
+  glasses: false, cap: false, headphones: false, headphonesStyle: 'none', backpack: false, bagStyle: 'none', watch: true, pin: false,
   background: '#F4F1EB', cardScene: 'truck', logoTheme: 'zf-blue', personalityProfile: null,
   // New controls are appended after the legacy share fields so older card links remain readable.
   jawline: 'defined', moustache: 'none', teethStyle: 'individual',
@@ -45,7 +45,7 @@ const enums = {
   outfit: ['tee', 'overshirt', 'hoodie', 'bomber', 'blazer', 'utility', 'jersey', 'zf-polo', 'zf-polo-white', 'zf-polo-navy', 'traditional-kurta', 'casual-shirt', 'sweater', 'cardigan', 'denim-jacket', 'zip-jacket','hero-suit'],
   bottoms: ['jeans', 'cargo', 'chinos', 'joggers', 'shorts', 'formal-trousers', 'track-pants'],
   footwear: ['sneaker', 'high-top', 'boot', 'loafer', 'dress-shoe'],
-  pose: ['idle', 'wave', 'thumbs-up', 'hands-on-hips', 'crossed-arms', 'hands-behind-back', 'flex', 'victory', 'welcome', 'dance', 'hand-over-heart', 'hands-clasped-front', 'salute', 'both-wave', 'pointing', 'peace', 'wide-stance', 'relaxed-lean'],
+  pose: ['idle', 'wave', 'thumbs-up', 'hands-on-hips', 'flex', 'victory', 'welcome', 'dance', 'hand-over-heart', 'both-wave', 'pointing', 'peace', 'wide-stance', 'relaxed-lean'],
   handStyle: ['open', 'fist', 'thumbs-up', 'mitten', 'peace', 'point'],
   heroSuitStyle: ['classic','armored','tech','formal-coat'],
   heroCapeStyle: ['none','short','long','split','flight'],
@@ -97,6 +97,14 @@ export function normalizeFigure(input = {}) {
   if (!Object.hasOwn(compatible, 'headphonesStyle')) compatible.headphonesStyle = compatible.headphones ? 'studio' : 'none';
   if (!Object.hasOwn(compatible, 'bagStyle')) compatible.bagStyle = compatible.backpack ? 'backpack' : 'none';
   const state = { ...DEFAULT_FIGURE, ...compatible };
+  const retiredPoses = {
+    'hands-clasped-front': 'hand-over-heart',
+    'hands-behind-back': 'idle',
+    'crossed-arms': 'hands-on-hips',
+    salute: 'wave'
+  };
+  if (retiredPoses[state.pose]) state.pose = retiredPoses[state.pose];
+  state.pin = false;
   // Character control invariants: normal clothing must never carry hero overlays.
   // Changing a hero to an ordinary outfit also clears the rendered cape/armour state.
   if (state.outfit !== 'hero-suit') {

@@ -31,7 +31,7 @@ const ARCHETYPES = Object.freeze([
 ]);
 export const VARIATIONS = Object.freeze([
  {tone:'Balanced',description:'A faithful, everyday interpretation',outfit:'Outfit_Polo',hair:'Hair_Quiff',gesture:'idle',smile:45,accent:'#2369ad'},
- {tone:'Bold',description:'A confident, expressive take',outfit:'Outfit_Jacket',hair:'Hair_SidePart',gesture:'salute',smile:62,accent:'#614bb8'},
+ {tone:'Bold',description:'A confident, expressive take',outfit:'Outfit_Jacket',hair:'Hair_SidePart',gesture:'wave',smile:62,accent:'#614bb8'},
  {tone:'Warm',description:'A friendly, appreciative interpretation',outfit:'Outfit_Casual',hair:'Hair_Curls',gesture:'wave',smile:82,accent:'#d07851'},
  {tone:'Playful',description:'A light-hearted celebration hero',outfit:'Outfit_Casual',hair:'Hair_Quiff',gesture:'wave',smile:100,accent:'#c84c86'},
  {tone:'Polished',description:'A refined professional take',outfit:'Outfit_Polo',hair:'Hair_SidePart',gesture:'idle',smile:28,accent:'#1b587a'}

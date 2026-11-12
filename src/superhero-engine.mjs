@@ -49,8 +49,8 @@ const GROUP_HERO_LOOKS=Object.freeze({
 });
 const GROUP_INDEX = Object.freeze({guardian:0,sentinel:1,innovator:2,anchor:0,spark:1,momentum:2});
 const GROUP_POSES = Object.freeze({
-  guardian:['welcome','hand-over-heart','hands-clasped-front'],sentinel:['wide-stance','victory','flex'],
-  innovator:['pointing','victory','hands-on-hips'],anchor:['crossed-arms','hands-behind-back','wide-stance'],
+  guardian:['welcome','hand-over-heart','wave'],sentinel:['wide-stance','victory','flex'],
+  innovator:['pointing','victory','hands-on-hips'],anchor:['hands-on-hips','idle','wide-stance'],
   spark:['dance','wave','victory'],momentum:['victory','wide-stance','dance']
 });
 const GROUP_EXPRESSIONS = Object.freeze({guardian:['smile','joyful','determined'],sentinel:['determined','focused','grin'],innovator:['focused','excited','smile'],anchor:['calm','smile','determined'],spark:['excited','joyful','grin'],momentum:['excited','determined','grin']});

@@ -32,7 +32,7 @@ const ENUMS={
   expression:['smile','grin','calm','focused','surprised','excited','joyful','laughing','astonished','determined','playful'],
   outfit:['tee','overshirt','hoodie','bomber','blazer','utility','jersey','zf-polo','zf-polo-white','zf-polo-navy','traditional-kurta','casual-shirt','sweater','cardigan','denim-jacket','zip-jacket','hero-suit'],
   bottoms:['jeans','cargo','chinos','joggers','shorts','formal-trousers','track-pants'],footwear:['sneaker','high-top','boot','loafer','dress-shoe'],
-  pose:['idle','wave','thumbs-up','hands-on-hips','crossed-arms','hands-behind-back','flex','victory','welcome','dance','hand-over-heart','hands-clasped-front','salute','both-wave','pointing','peace','wide-stance','relaxed-lean'],
+  pose:['idle','wave','thumbs-up','hands-on-hips','flex','victory','welcome','dance','hand-over-heart','both-wave','pointing','peace','wide-stance','relaxed-lean'],
   handStyle:['open','fist','thumbs-up','mitten','peace','point'],cardScene:['truck','bus'],logoTheme:['white','zf-blue'],
   cardBackground:['renewable-hills','city-skyline','coastal-highway','green-countryside','logistics-hub'],
   heroSuitStyle:['classic','armored','tech','formal-coat'],heroCapeStyle:['none','short','long','split','flight'],heroEyeMaskStyle:['none','eye-frame','tech-visor','shield-frame','armored-eyeport','radiant-band','thunder-crest','web-frame','shadow-cowl'],

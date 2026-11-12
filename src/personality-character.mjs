@@ -46,7 +46,7 @@ const DIMENSION_STYLE = Object.freeze({
 });
 const STYLE = Object.freeze({
   welcome: { outfit: ['overshirt','tee','casual-shirt','cardigan','blazer'], gesture: 'wave', expression: 'smile',
-    palette: ['#176A76','#F17B63','#263D54'], tagline: 'Makes people feel seen, supported and ready to move forward.', accessory: 'pin' },
+    palette: ['#176A76','#F17B63','#263D54'], tagline: 'Makes people feel seen, supported and ready to move forward.', accessory: 'watch' },
   bold: { outfit: ['bomber','blazer','denim-jacket','zip-jacket','overshirt'], gesture: 'hands-on-hips', expression: 'focused',
     palette: ['#244F91','#F2A34A','#263D54'], tagline: 'Brings calm conviction to the moments that need a first step.', accessory: 'watch' },
   inventive: { outfit: ['utility','hoodie','sweater','denim-jacket','bomber'], gesture: 'welcome', expression: 'grin',
@@ -60,7 +60,7 @@ const STYLE = Object.freeze({
 });
 const HAIR_VARIANTS = ['quiff','curls','crop','fade','locs','long'];
 const VARIATION_TONES = ['Signature','Expressive','Refined'];
-const VARIATION_POSES = ['wave','hands-on-hips','victory','welcome','crossed-arms','flex','dance','thumbs-up','idle'];
+const VARIATION_POSES = ['wave','hands-on-hips','victory','welcome','flex','dance','thumbs-up','idle','pointing'];
 const NAMES = Object.freeze({
   welcome: ['Kindred Spark','Goodwill Builder','The Welcome Maker','Brightside Ally','The People Champion'],
   bold: ['Bold Compass','Pathstarter','The Forward Force','Steady Trailblazer','The First Mover'],
@@ -178,7 +178,7 @@ export function generateCharacterVariations(qualities, seed = 0) {
       pose,
       handStyle: pose === 'thumbs-up' ? 'thumbs-up' : 'open',
       topColor: palette[0], accentColor: accent, pantsColor: palette[2],
-      pin: maxSignal>=35 && chosenStyle.accessory === 'pin',
+      pin: false,
       watch: maxSignal>=35 && chosenStyle.accessory === 'watch',
       headphonesStyle: maxSignal>=35 && chosenStyle.accessory === 'headphones' ? 'studio' : 'none',
       bagStyle: maxSignal>=35 && chosenStyle.accessory === 'backpack' ? 'backpack' : 'none',
