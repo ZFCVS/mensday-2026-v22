@@ -766,24 +766,25 @@ function downloadCanvasCard(card){
 }
 function cardShareSubject(){return `International Men’s Day 2026 card for ${recipientName}`;}
 function cardShareMessage(){
-  return `${state.greeting}\n\nFrom: ${displaySender()}\n\nView your card: ${currentShareUrl}\n\nCreate a card for someone else: ${getCreateAnotherUrl()||GITHUB_SITE_HOME}`;
+  return currentEmailMessage().plain;
 }
-function currentEmailMessage(){return buildEmailMessage({greeting:state.greeting,sender:displaySender(),cardUrl:currentShareUrl,createUrl:getCreateAnotherUrl()});}
+function currentEmailMessage(){return buildEmailMessage({recipient:recipientName,greeting:state.greeting,sender:displaySender(),cardUrl:currentShareUrl,createUrl:getCreateAnotherUrl()});}
 function renderEmailPreview(){
   const preview=$('email-message-preview');if(!preview||!currentShareUrl)return;
-  const message=currentEmailMessage(),greeting=document.createElement('p'),sender=document.createElement('p');
-  greeting.textContent=state.greeting;sender.textContent=`From: ${displaySender()}`;
-  preview.replaceChildren(greeting,sender);
+  const message=currentEmailMessage(),salutation=document.createElement('p'),greeting=document.createElement('p'),sender=document.createElement('p');
+  salutation.textContent=`Dear ${recipientName.trim()},`;greeting.textContent=state.greeting;sender.textContent=`Warm regards, ${displaySender()}`;
+  preview.replaceChildren(salutation,greeting);
   for(const [label,url] of [['View your card',message.cardUrl],['Create a card for someone else',message.createUrl]]){
     const p=document.createElement('p'),link=document.createElement('a');link.textContent=label;link.href=url;link.target='_blank';link.rel='noopener noreferrer';p.append(link);preview.append(p);
   }
+  preview.append(sender);
 }
 function copyFormattedEmail(){
   const note=$('share-email-copy-status');
   try{
     const message=currentEmailMessage();
     Promise.resolve(copyEmailMessage(navigator.clipboard,globalThis.ClipboardItem,message)).then(()=>{
-      note.textContent='Copied! Open Outlook (Step 2), then paste (Ctrl+V).';
+      note.textContent='Copied. Paste (Ctrl+V) into your Outlook draft.';
     }).catch(()=>{note.textContent='Copy blocked. Use “Preview email text” below.';});
   }catch(error){note.textContent=error.message;}
 }
@@ -796,9 +797,9 @@ function updateSharePreparation(status,error){
   }
   const native=$('share-native-button');if(native)native.disabled=shareOpening||!shareDelivery.getReady();
   for(const id of ['share-download-png','share-download-gif']){const button=$(id);if(button)button.disabled=!shareDelivery.getReady();}
-  const copy=$('share-copy-email');if(copy)copy.disabled=!shareDelivery.getReady();
+  const copy=$('share-copy-email');if(copy)copy.disabled=!currentShareUrl;
   if(status==='ready')renderEmailPreview();
-  const note=$('share-preparation-note');if(note)note.textContent=error?.name==='StaleShareError'?'Updating your latest card…':error?error.message:shareOpening?'Your device’s share menu is opening. Return here to retry or choose another route.':status==='preparing'?'Preparing PNG + GIF…':shareDelivery.getReady()?'PNG + GIF ready.':'Preparing the latest card…';
+  const note=$('share-preparation-note');if(note)note.textContent=error?.name==='StaleShareError'?'Updating your latest card…':error?error.message:shareOpening?'Your device’s share menu is opening. Return here to retry or choose another route.':status==='preparing'?'Preparing PNG + GIF…':shareDelivery.getReady()?'Card ready. Downloads are optional.':'Preparing optional downloads…';
 }
 function queueSharePreparation(){
   clearTimeout(sharePrepareTimer);
@@ -816,14 +817,41 @@ function shareCard(){
   shareDelivery.prepare().catch(error=>{if(error.name==='StaleShareError')queueSharePreparation();});
 }
 function openOutlookWebDraft(){
-  // Open the browser's Outlook composer without relying on the Windows Share picker.
-  // Pre-fill only the subject: URL tokens can be very long and Outlook's deeplink
-  // does not reliably preserve rich HTML anchors in its body.
-  const url='https://outlook.office.com/mail/deeplink/compose?subject='+encodeURIComponent(cardShareSubject());
-  window.open(url,'_blank','noopener,noreferrer');
+  // Outlook's compose deep link accepts plain text only; its body length is
+  // not guaranteed. Try a moderately sized encoded email, otherwise provide
+  // an explicit copy/paste fallback instead of pretending the body was sent.
   const note=$('share-preparation-note');
-  if(note)note.textContent='Outlook opened. Paste (Ctrl+V), then attach PNG + GIF.';
-
+  let message;
+  try { message=currentEmailMessage(); }
+  catch(error){if(note)note.textContent='Card link unavailable: '+error.message;return;}
+  const subject=cardShareSubject();
+  const subjectOnly='https://outlook.office.com/mail/deeplink/compose?subject='+encodeURIComponent(subject);
+  const withBody=subjectOnly+'&body='+encodeURIComponent(message.plain);
+  const popup=window.open('about:blank','_blank');
+  if(!popup){
+    if(note)note.textContent='Your browser blocked Outlook. Allow pop-ups for this website, then try again.';
+    return;
+  }
+  // Larger links are susceptible to being silently dropped by Outlook.
+  // Opening a blank-body draft without an explanation led to user confusion.
+  const useDirectBody=withBody.length<=5000;
+  if(useDirectBody){
+    popup.location.replace(withBody);
+    if(note)note.textContent='Outlook is opening with Dear '+recipientName.trim()+', the full greeting and both card links. Review before sending.';
+    return;
+  }
+  // Rich clipboard fallback for links that would create an unreliable deep link.
+  popup.location.replace(subjectOnly);
+  if(note)note.textContent='This personalized card link is too long for reliable Outlook prefill. The complete email is being copied. Paste it into the Outlook message body (Ctrl+V).';
+  try{
+    Promise.resolve(copyEmailMessage(navigator.clipboard,globalThis.ClipboardItem,message)).then(()=>{
+      if(note)note.textContent='Full email copied, including Dear '+recipientName.trim()+', the wish and both links. Paste in Outlook (Ctrl+V).';
+    }).catch(()=>{
+      if(note)note.textContent='Copy was blocked. Expand “Preview email text”, select all the message and paste it into Outlook.';
+    });
+  }catch(error){
+    if(note)note.textContent='Expand “Preview email text”, copy the message, and paste it into Outlook.';
+  }
 }
 function downloadPreparedAttachment(extension){
   const prepared=shareDelivery.getReady();
@@ -832,7 +860,7 @@ function downloadPreparedAttachment(extension){
   const file=prepared.files.find(item=>item.name.toLowerCase().endsWith('.'+extension));
   if(!file){if(note)note.textContent='Could not find the '+extension.toUpperCase()+' attachment.';return;}
   download(file,file.name);
-  if(note)note.textContent=extension.toUpperCase()+' downloaded. Attach both files in Outlook.';
+  if(note)note.textContent=extension.toUpperCase()+' downloaded. Attach it only if you wish.';
 }
 function sharePreparedFiles(){
   if(shareOpening)return;
