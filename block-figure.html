@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f1eb">
+  <title>Block Figure Studio · Good Men Studio</title>
+  <link rel="stylesheet" href="./src/brand-fonts.css">
+  <link rel="stylesheet" href="./src/block-figure.css">
+</head>
+<body>
+  <main class="studio-shell">
+    <header class="studio-header" id="studio-header">
+      <a class="brand" href="./index.html" aria-label="Good Men Studio home"><img class="brand-mark" src="./assets/brand/zf-logo-blue.png" alt="ZF logo"></a>
+      <a class="back-link" href="./index.html">← Main character studio</a>
+    </header>
+
+    <section class="page-intro" id="page-intro">
+      <div>
+        <p class="eyebrow">A ZF MEN’S DAY COLLECTIBLE</p>
+        <h1>Build a character around their strengths.</h1>
+        <p>Choose five qualities. Their scores shape three character concepts; then customize the one you choose.</p>
+      </div>
+      <div class="intro-actions" id="studio-actions" hidden>
+        <button class="button secondary" id="choose-another" type="button">Choose another concept</button><button class="button secondary" id="undo" type="button" disabled>Undo</button><button class="button secondary" id="redo" type="button" disabled>Redo</button><button class="button secondary" id="randomize" type="button">Randomize ↻</button><button class="button secondary" id="reset" type="button">Reset edits</button><button class="button primary" id="restore-original" type="button">Restore original</button>
+      </div>
+    </section>
+
+    <section class="mobile-share-view panel" id="mobile-share-view" aria-labelledby="mobile-share-title" hidden>
+      <div class="mobile-share-brand"><img src="./assets/brand/zf-logo-blue.png" alt="ZF"><span><strong id="mobile-share-title">International Men’s Day 2026</strong><small>The Future Is Everyone.</small></span></div>
+      <p class="mobile-share-intro" id="mobile-share-intro">A character card made with appreciation.</p>
+      <div class="mobile-share-card"><canvas id="mobile-card-preview" width="1080" height="1512" aria-label="Personalized ZF International Men’s Day card"></canvas></div>
+      <p class="mobile-share-note" id="mobile-share-note">The card data is carried in this link. It is not uploaded to a third party.</p>
+      <div class="mobile-share-actions"><button class="button primary" id="mobile-download-card" type="button" disabled>Download image to phone</button><button class="button secondary" id="mobile-share-card" type="button" disabled>Share card</button><button class="button secondary" id="mobile-copy-share-link" type="button">Copy card link ↗</button><button class="button secondary" id="create-for-others" type="button">Create a card for someone else</button></div>
+    </section>
+
+    <div class="flow-steps" id="creation-progress" aria-label="Character creation steps"><span class="current" aria-current="step">01 <b>Names & qualities</b></span><span>02 <b>Rate qualities</b></span><span>03 <b>Choose character</b></span><span>04 <b>Customize</b></span><span>05 <b>Share card</b></span></div>
+    <section class="personality-gate panel" id="personality-gate" aria-labelledby="profile-title">
+      <div id="profile-step">
+        <section class="recipient-card" aria-labelledby="recipient-heading">
+          <span class="form-step">START HERE · BOTH NAMES REQUIRED</span><h2 id="recipient-heading">Who is this card for—and who is sending it?</h2>
+          <div class="name-input-grid"><div class="name-field"><label class="field-label" for="recipient-input">Recipient’s name</label><input class="text-input recipient-field" id="recipient-input" maxlength="50" placeholder="Enter the recipient’s name" autocomplete="off"></div>
+          <div class="name-field"><label class="field-label" for="sender-input">Your name · sender</label><input class="text-input recipient-field" id="sender-input" maxlength="50" placeholder="Enter your name" autocomplete="name"></div></div>
+          <p class="field-hint">Both names will appear on the card. You’ll need them before moving to the qualities.</p>
+        </section>
+        <div class="profile-hero">
+          <div><p class="eyebrow">A CHARACTER BUILT AROUND PERSONALITY</p><h2 id="profile-title">What makes this person special?</h2>
+          <p class="gate-copy">Choose five qualities. They shape expression, pose and style; appearance stays yours to customize.</p></div>
+          <div class="quality-emblem" aria-hidden="true"><strong>05</strong><span>qualities<br>one character</span><i>✦</i></div>
+        </div>
+        <div class="profile-entry-grid">
+          <section class="quality-card-panel" aria-labelledby="quality-heading">
+            <div class="quality-panel-heading"><div><span class="form-step">02 · HIS STRENGTHS</span><h3 id="quality-heading">Choose exactly five qualities</h3></div><span class="quality-count" id="quality-count" aria-live="polite">0 of 5 chosen</span></div>
+            <p class="quality-instruction" id="quality-helper" aria-live="polite">Nothing is preselected. Choose five qualities that feel true to the person.</p>
+            <div class="quality-progress" id="quality-progress" role="progressbar" aria-label="Selected qualities" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0"><span id="quality-progress-fill"></span></div>
+            <p class="trait-catalogue-label" id="featured-trait-label" aria-live="polite">10 featured · 40 more qualities</p>
+            <div class="quality-tools">
+              <div><label class="quality-search-label" for="trait-category">Browse group</label><select class="quality-category" id="trait-category" aria-label="Filter qualities by group"><option value="all">All 50 qualities</option><option value="care">Care &amp; connection</option><option value="character">Confidence &amp; character</option><option value="creativity">Creativity &amp; curiosity</option><option value="energy">Energy &amp; initiative</option><option value="joy">Joy &amp; humour</option></select></div>
+              <div><label class="quality-search-label" for="trait-search">Find a quality</label><input class="quality-search" id="trait-search" type="search" placeholder="Search qualities" autocomplete="off"></div>
+            </div>
+            <div class="trait-selector" id="trait-selector" role="group" aria-label="Choose five personality qualities"></div>
+            <p class="trait-empty-state" id="trait-empty-state" hidden>No matching qualities. Try a different search.</p>
+          </section>
+        </div>
+        <p class="form-error" id="profile-error" role="status" aria-live="polite"></p>
+        <div class="gate-actions"><button class="button primary gate-generate" id="continue-to-scores" type="button" disabled>Next: rate qualities <span aria-hidden="true">→</span></button><span class="gate-note" id="profile-ready-note">Enter both names and choose five qualities. Click Next for guidance.</span></div>
+      </div>
+      <div id="score-step" hidden>
+        <div class="results-heading"><div><p class="eyebrow">STEP 02 · PERSONALIZE THE PROFILE</p><h2>Adjust the scores that matter.</h2><p class="gate-copy">Try all five sliders to shape the character. Every slider starts at 50, and you can return any score to 50.</p></div><span class="score-range-badge" id="score-progress-label">0 of 5 adjusted</span></div>
+        <section class="score-panel" aria-labelledby="score-heading">
+          <div class="score-heading"><div><span class="form-step">RATE EACH QUALITY</span><h3 id="score-heading">How strongly does each quality show?</h3><p>Drag, tap, or use arrow keys to try each of the five sliders before continuing. Move any slider back to 50 if you prefer.</p></div><span class="score-range-badge">0 <i>—</i> 100</span></div>
+          <p class="score-empty" id="score-empty" hidden></p><div class="score-list" id="score-list"></div>
+          <section class="hero-unlock-card is-locked" id="hero-unlock-card" aria-live="polite" aria-atomic="true">
+            <span class="hero-unlock-icon" id="hero-unlock-icon" aria-hidden="true">🔒</span><div><p class="eyebrow">SUPERPOWER CHARACTERS</p><h3 id="hero-unlock-title">A superpower look is waiting</h3><p id="hero-unlock-message">Rate any two selected qualities 80 or higher to unlock superpower characters.</p><p class="hero-qualifying-count" id="hero-qualifying-count">0 qualifying qualities · 2 needed</p></div>
+          </section>
+          <p class="hero-preservation-note" id="hero-preservation-note" role="status" hidden></p>
+        </section>
+        <div class="gate-actions score-actions"><button class="button secondary" id="back-to-qualities" type="button">← Back</button><button class="button primary gate-generate" id="generate-characters" type="button" disabled>Create character options <span aria-hidden="true">→</span></button><span class="gate-note" id="score-ready-note">Try all five sliders to continue. You can move any slider back to 50.</span></div>
+      </div>
+      <div id="variation-step" hidden>
+        <div class="results-heading"><div><p class="eyebrow" id="variation-eyebrow">SAME PROFILE · THREE VISUAL INTERPRETATIONS</p><h2 id="variation-title">Choose a starting character.</h2><p class="gate-copy" id="profile-summary"></p></div><div class="variation-heading-actions"><button class="button secondary" id="show-other-gallery" type="button" hidden>Browse standard characters</button><button class="button secondary" id="edit-profile" type="button">Edit qualities & scores</button></div></div>
+        <div class="variation-grid" id="variation-grid"></div>
+        <div class="gate-actions"><button class="button secondary" id="regenerate-characters" type="button">Regenerate 3 variations ↻</button><span class="gate-note">His five qualities and scores stay the same.</span></div>
+        <section class="hero-variation-section" id="hero-variation-section" hidden>
+          <div class="hero-variation-grid" id="hero-variation-grid"></div>
+        </section>
+      </div>
+    </section>
+
+    <div class="studio-grid" id="studio-grid" hidden>
+      <aside class="panel control-panel" aria-label="Character customization controls">
+        <div id="customization-guide" class="customization-guide" hidden role="status"><strong>Try a few looks.</strong> Open a section below and change a hairstyle, outfit, pose or accessory. Your personality scores stay attached. You can undo or reset changes.</div>
+        <div class="panel-heading"><div><span class="eyebrow">BUILD HIS LOOK</span><h2>Customize</h2></div><span class="live-tag"><i></i> Live</span></div>
+        <details class="control-section" data-exclusive-accordion><summary><span class="section-number">01</span><span>Identity</span><span class="chevron">⌄</span></summary>
+          <label class="field-label" for="name">Character name</label><input id="name" class="text-input" data-key="name" maxlength="40" value="Brightforge">
+          <label class="field-label" for="tagline">Personality tagline</label><input id="tagline" class="text-input" data-key="tagline" maxlength="130" value="Shows up. Sparks ideas. Brings everyone forward.">
+          <label class="field-label">Generated personality profile</label><div id="personality-summary" class="personality-summary">Five scored qualities are retained with this figure.</div><p class="control-note">The character identity and scores remain attached while you edit his appearance.</p>
+        </details>
+
+        <details class="control-section" data-exclusive-accordion><summary><span class="section-number">02</span><span>Face, beard & hair</span><span class="chevron">⌄</span></summary>
+          <div class="field-pair"><div><label class="field-label" for="headShape">Face shape</label><select id="headShape" data-key="headShape"><option value="classic">Classic</option><option value="square">Square</option><option value="tall">Long oval</option><option value="wide">Wide</option><option value="round">Round</option><option value="oval">Oval</option><option value="heart">Heart</option><option value="diamond">Diamond</option></select></div><div><label class="field-label" for="jawline">Jawline</label><select id="jawline" data-key="jawline"><option value="soft">Soft</option><option value="defined" selected>Defined</option><option value="angular">Angular</option><option value="tapered">Tapered</option><option value="broad">Broad</option></select></div></div>
+          <label class="field-label" for="expression">Expression</label><select id="expression" data-key="expression"><option value="smile">Warm smile</option><option value="grin">Big grin</option><option value="calm">Calm</option><option value="focused">Focused</option><option value="surprised">Surprised</option><option value="excited">Excited</option><option value="joyful">Joyful</option><option value="laughing">Laughing</option><option value="astonished">Astonished</option><option value="determined">Determined</option><option value="playful">Playful · one brow raised</option></select>
+          <label class="field-label" for="mouthStyle">Mouth & smile shape</label><select id="mouthStyle" data-key="mouthStyle"><option value="auto">Match the expression</option><option value="closed">Closed mouth</option><option value="smile">Curved smile</option><option value="open">Open mouth</option><option value="grin">Toothy grin</option><option value="wide-grin">Wide grin</option><option value="laugh">Open laugh</option><option value="pursed">Pursed lips</option></select>
+          <div class="field-pair"><div><label class="field-label" for="eyeShape">Eye shape</label><select id="eyeShape" data-key="eyeShape"><option value="classic">Classic</option><option value="round">Round</option><option value="narrow">Narrow</option><option value="wide">Wide</option></select></div><div><label class="field-label" for="browStyle">Eyebrows</label><select id="browStyle" data-key="browStyle"><option value="natural">Natural</option><option value="bold">Bold</option><option value="raised">Raised</option><option value="angled">Angled</option></select></div></div>
+          <label class="field-label" for="noseScale">Nose size <output id="noseScale-label">100%</output></label><input id="noseScale" data-key="noseScale" type="range" min="75" max="125" value="100">
+          <label class="field-label" for="smileIntensity">Smile intensity <output id="smileIntensity-label">65%</output></label><input id="smileIntensity" data-key="smileIntensity" type="range" min="0" max="100" value="65"><label class="toggle-row"><input id="teethVisible" data-key="teethVisible" type="checkbox" checked><span>Show teeth in open smiles</span></label>
+          <label class="field-label" for="teethStyle">Teeth</label><select id="teethStyle" data-key="teethStyle"><option value="individual">Individual front teeth</option><option value="even">Even tooth band</option><option value="small">Subtle small teeth</option><option value="gap">Natural small gap</option></select>
+          <label class="field-label" for="age">Age <output id="age-label">34</output></label><input id="age" data-key="age" type="range" min="18" max="80" value="34"><div class="range-scale"><span>18</span><span>80</span></div>
+          <label class="field-label" for="hairstyle">Hair style</label><select id="hairstyle" data-key="hairstyle"><option value="bald">Bald</option><option value="buzz">Buzz cut</option><option value="crop">Short crop</option><option value="quiff" selected>Swept quiff</option><option value="side-part">Side part</option><option value="fringe">Block fringe</option><option value="spiky">Spiky</option><option value="curls">Natural curls</option><option value="afro">Rounded curls</option><option value="locs">Locs</option><option value="long">Long sides</option><option value="fade">High fade</option><option value="mullet">Modern mullet · volume at back</option><option value="flowing">Flowing sides & front</option></select>
+          <div class="field-pair color-pair"><div><label class="field-label" for="hairColor">Hair colour</label><input id="hairColor" data-key="hairColor" type="color" value="#252A37"></div><div><label class="field-label" for="eyeColor">Eye colour</label><input id="eyeColor" data-key="eyeColor" type="color" value="#31566B"></div></div>
+          <div class="field-pair"><div><label class="field-label" for="beard">Beard style</label><select id="beard" data-key="beard"><option value="none">Clean shaven</option><option value="light-stubble">Light stubble</option><option value="stubble">Heavy stubble</option><option value="short" selected>Short beard</option><option value="full">Full beard</option><option value="goatee">Goatee</option><option value="anchor">Anchor beard</option><option value="soul-patch">Soul patch</option><option value="chinstrap">Chin strap</option><option value="sideburns">Sideburns</option></select></div><div><label class="field-label" for="moustache">Moustache</label><select id="moustache" data-key="moustache"><option value="none">None</option><option value="pencil">Pencil</option><option value="classic">Classic</option><option value="chevron">Chevron</option><option value="handlebar">Handlebar</option><option value="walrus">Walrus</option><option value="horseshoe">Horseshoe</option></select></div></div>
+          <p class="control-note">Beard and moustache are separate controls. Beard geometry stays below the mouth; moustache shapes sit above the lip.</p>
+          <label class="field-label">Skin tone</label><div class="skin-swatches" role="group" aria-label="Skin tone presets">
+            <button type="button" class="skin-swatch" data-skin="#F2D2BA" style="--swatch:#F2D2BA" aria-label="Light skin tone"></button><button type="button" class="skin-swatch" data-skin="#E5B997" style="--swatch:#E5B997" aria-label="Warm light skin tone"></button><button type="button" class="skin-swatch" data-skin="#D69B75" style="--swatch:#D69B75" aria-label="Tan skin tone"></button><button type="button" class="skin-swatch active" data-skin="#B97855" style="--swatch:#B97855" aria-label="Medium brown skin tone"></button><button type="button" class="skin-swatch" data-skin="#905B43" style="--swatch:#905B43" aria-label="Deep brown skin tone"></button><button type="button" class="skin-swatch" data-skin="#603B2D" style="--swatch:#603B2D" aria-label="Very deep skin tone"></button>
+          </div><label class="field-label" for="skin">Custom skin colour</label><input id="skin" data-key="skin" type="color" value="#B97855">
+        </details>
+
+        <details class="control-section" data-exclusive-accordion><summary><span class="section-number">03</span><span>Body & proportions</span><span class="chevron">⌄</span></summary>
+          <label class="field-label" for="build">Body build</label><select id="build" data-key="build"><option value="lean">Lean</option><option value="average">Average</option><option value="athletic" selected>Athletic</option><option value="broad">Broad</option><option value="stocky">Stocky</option></select>
+          <label class="field-label" for="belly">Belly <output id="belly-label">0%</output></label><input id="belly" data-key="belly" type="range" min="0" max="60" value="0">
+          <label class="field-label" for="height">Height <output id="height-label">182 cm</output></label><input id="height" data-key="height" type="range" min="160" max="205" value="182"><div class="range-scale"><span>160 cm</span><span>205 cm</span></div>
+          <label class="field-label" for="headSize">Head size <output id="headSize-label">100%</output></label><input id="headSize" data-key="headSize" type="range" min="82" max="122" value="100">
+          <label class="field-label" for="shoulders">Shoulder width <output id="shoulders-label">100%</output></label><input id="shoulders" data-key="shoulders" type="range" min="82" max="122" value="100">
+          <label class="field-label" for="legRatio">Leg proportion <output id="legRatio-label">100%</output></label><input id="legRatio" data-key="legRatio" type="range" min="85" max="115" value="100">
+          <label class="field-label" for="armLength">Arm length <output id="armLength-label">100%</output></label><input id="armLength" data-key="armLength" type="range" min="80" max="120" value="100">
+          <label class="field-label" for="armMuscle">Arm muscle <output id="armMuscle-label">100%</output></label><input id="armMuscle" data-key="armMuscle" type="range" min="70" max="130" value="100">
+          <label class="field-label" for="legMuscle">Leg muscle <output id="legMuscle-label">100%</output></label><input id="legMuscle" data-key="legMuscle" type="range" min="70" max="130" value="100">
+          <label class="field-label" for="handSize">Hand size <output id="handSize-label">100%</output></label><input id="handSize" data-key="handSize" type="range" min="80" max="125" value="100">
+        </details>
+
+        <details class="control-section" data-exclusive-accordion><summary><span class="section-number">04</span><span>Clothing</span><span class="chevron">⌄</span></summary>
+          <label class="field-label" for="outfit-preset">Curated outfit combination</label><select id="outfit-preset" data-look-preset><option value="">Choose a coordinated look</option><option value="zf-white">ZF white polo · casual sling</option><option value="zf-navy">ZF navy polo · smart commute</option><option value="office-smart">Office smart</option><option value="weekend-denim">Weekend denim</option><option value="creative-layer">Creative layers</option></select>
+          <label class="field-label" for="outfit">Top style</label><select id="outfit" data-key="outfit"><option value="tee">T-shirt</option><option value="overshirt" selected>Layered overshirt</option><option value="casual-shirt">Casual button-down</option><option value="sweater">Crew-neck sweater</option><option value="cardigan">Open cardigan</option><option value="denim-jacket">Denim jacket</option><option value="zip-jacket">Zip jacket</option><option value="hoodie">Hoodie</option><option value="bomber">Bomber jacket</option><option value="blazer">Smart blazer</option><option value="utility">Utility vest</option><option value="jersey">Team jersey</option><option value="zf-polo-white">ZF polo — white · blue chest logo</option><option value="zf-polo-navy">ZF polo — navy · white chest logo</option><option value="traditional-kurta">Traditional kurta</option></select>
+          <p class="control-note">The official logo is fixed on the left chest: blue on the white polo and white on the navy polo.</p>
+          <div class="field-pair color-pair"><div><label class="field-label" for="topColor">Main colour</label><input id="topColor" data-key="topColor" type="color" value="#176A76"><small id="top-color-note" class="control-note">Choose a fabric colour.</small></div><div><label class="field-label" for="accentColor">Accent colour</label><input id="accentColor" data-key="accentColor" type="color" value="#F17B63"></div></div>
+          <label class="field-label" for="bottoms">Bottoms</label><select id="bottoms" data-key="bottoms"><option value="jeans">Denim jeans</option><option value="cargo" selected>Cargo trousers</option><option value="chinos">Chinos</option><option value="formal-trousers">Formal trousers</option><option value="joggers">Joggers</option><option value="track-pants">Track pants</option><option value="shorts">Shorts</option></select>
+          <div class="field-pair color-pair"><div><label class="field-label" for="pantsColor">Trousers</label><input id="pantsColor" data-key="pantsColor" type="color" value="#263D54"></div><div><label class="field-label" for="footwear">Shoes</label><select id="footwear" data-key="footwear"><option value="sneaker">Sneakers</option><option value="high-top" selected>High-tops</option><option value="boot">Boots</option><option value="loafer">Loafers</option><option value="dress-shoe">Dress shoes</option></select></div></div>
+          <label class="field-label" for="shoeColor">Shoe colour</label><input id="shoeColor" data-key="shoeColor" type="color" value="#F2EEE5">
+        </details>
+
+        <details class="control-section" data-exclusive-accordion><summary><span class="section-number">05</span><span>Pose & hands</span><span class="chevron">⌄</span></summary>
+          <label class="field-label" for="pose">Standing pose & gesture</label><select id="pose" data-key="pose"><option value="idle">Easy stance</option><option value="wave" selected>Wave hello</option><option value="both-wave">Both hands wave</option><option value="thumbs-up">Thumbs-up</option><option value="hand-over-heart">Hand over heart</option><option value="hands-clasped-front">Hands clasped in front</option><option value="hands-behind-back">Hands clasped behind back</option><option value="hands-on-hips">Hands on hips</option><option value="crossed-arms">Confident crossed arms</option><option value="salute">Salute</option><option value="pointing">Pointing gesture</option><option value="peace">Peace sign</option><option value="flex">Flex</option><option value="victory">Victory</option><option value="welcome">Open welcome</option><option value="wide-stance">Wide stance</option><option value="relaxed-lean">Relaxed one-leg stance</option><option value="dance">Celebrate</option></select>
+          <label class="field-label" for="handStyle">Hand shape</label><select id="handStyle" data-key="handStyle"><option value="open" selected>Open fingers</option><option value="fist">Fist</option><option value="thumbs-up">Thumbs up</option><option value="peace">Peace fingers</option><option value="point">Pointing finger</option><option value="mitten">Simple block hand</option></select>
+          <p class="control-note">Pose changes the arm and hand geometry. Drag the figure to turn the character around.</p>
+        </details>
+
+        <details class="control-section" data-exclusive-accordion><summary><span class="section-number">06</span><span>Accessories</span><span class="chevron">⌄</span></summary>
+          <div class="toggle-grid"><label><input id="glasses" data-key="glasses" type="checkbox"><span>Spectacles</span></label><label><input id="cap" data-key="cap" type="checkbox"><span>Baseball cap</span></label><label><input id="watch" data-key="watch" type="checkbox" checked><span>Watch</span></label><label><input id="pin" data-key="pin" type="checkbox" checked><span>Appreciation pin</span></label></div>
+          <label class="field-label" for="sunglassesStyle">Sunglasses</label><select id="sunglassesStyle" data-key="sunglassesStyle"><option value="none">None</option><option value="wayfarer">Wayfarer</option><option value="aviator">Aviator</option><option value="round">Round frame</option><option value="sport">Sport wrap</option><option value="oversized">Oversized</option></select>
+          <label class="field-label" for="headphonesStyle">Headphones</label><select id="headphonesStyle" data-key="headphonesStyle"><option value="none">None</option><option value="studio">Studio over-ear</option><option value="wireless">Wireless over-ear</option><option value="sport">Sport earbuds</option><option value="neckband">Neckband</option></select>
+          <label class="field-label" for="bagStyle">Shoulder bag & carry</label><select id="bagStyle" data-key="bagStyle"><option value="none">None</option><option value="backpack">Backpack with two straps</option><option value="shoulder-bag">Shoulder messenger bag</option><option value="sling-bag">Crossbody sling bag</option></select>
+          <label class="field-label" for="headwearStyle">Other headwear</label><select id="headwearStyle" data-key="headwearStyle"><option value="none">None</option><option value="beanie">Beanie</option><option value="brimmed-hat">Brimmed hat</option></select>
+          <label class="field-label" for="frameColor">Glasses frame</label><input id="frameColor" data-key="frameColor" type="color" value="#27344A">
+          <label class="field-label" for="background">Stage colour</label><input id="background" data-key="background" type="color" value="#F4F1EB">
+        </details>
+        <details class="control-section hero-gear-controls" id="hero-gear-controls" data-exclusive-accordion hidden><summary><span class="section-number">07</span><span>Superpower styling</span><span class="chevron">⌄</span></summary>
+          <p class="control-note">Choose a power-character style, then personalize the face, hair, suit, eye-safe mask, shoulder cape and boots.</p>
+          <label class="field-label" for="heroIdentity">Power identity</label><select id="heroIdentity"><option value="">Current identity</option></select>
+          <label class="field-label" for="heroLookPreset">Power suit style</label><select id="heroLookPreset" data-key="heroLookPreset"><option value="shield-guardian">Shield guardian</option><option value="armored-tech">Armoured tech suit</option><option value="radiant-hero">Radiant suit</option><option value="thunder-guardian">Thunder suit</option><option value="web-pattern">Web-pattern suit</option><option value="shadow-cowl">Shadow cowl suit</option><option value="formal-coat">Formal coat</option></select>
+          <label class="field-label">Secret superpower · choose a line</label><div id="hero-power-options" class="hero-power-options" role="group" aria-label="Choose one of three secret superpowers"></div>
+          <label class="field-label" for="heroPower">Edit secret superpower</label><textarea id="heroPower" class="text-input" data-key="heroPower" maxlength="250" rows="3"></textarea>
+          <label class="field-label" for="heroSuitStyle">Suit design</label><select id="heroSuitStyle" data-key="heroSuitStyle"><option value="classic">Classic panelled suit</option><option value="armored">Armoured chest and shoulders</option><option value="tech">Futuristic tech suit</option><option value="formal-coat">Formal coat hero</option></select>
+          <label class="field-label" for="heroCapeStyle">Cape style</label><select id="heroCapeStyle" data-key="heroCapeStyle"><option value="none">No cape</option><option value="short">Short cape</option><option value="long">Long cape</option><option value="split">Split cape</option><option value="flight">Flying shoulder cape</option></select>
+          <label class="field-label" for="heroCapeColor">Cape colour</label><input id="heroCapeColor" data-key="heroCapeColor" type="color" value="#D94C48">
+          <label class="field-label" for="heroEmblem">Suit emblem</label><select id="heroEmblem" data-key="heroEmblem"><option value="star">Star</option><option value="shield">Shield</option><option value="bolt">Lightning bolt</option><option value="gear">Gear</option><option value="heart">Heart</option><option value="sun">Sunburst</option><option value="none">No emblem</option></select>
+          <label class="field-label" for="heroEyeMaskStyle">Eye-safe power mask or helmet</label><select id="heroEyeMaskStyle" data-key="heroEyeMaskStyle"><option value="none">None</option><option value="eye-frame">Open eye frame</option><option value="shield-frame">Shield guardian frame</option><option value="armored-eyeport">Armoured helmet with eye ports</option><option value="tech-visor">Tech visor with open eyes</option><option value="radiant-band">Radiant power band</option><option value="thunder-crest">Thunder crest helmet</option><option value="web-frame">Web-pattern eye frame</option><option value="shadow-cowl">Shadow cowl frame</option></select>
+          <label class="field-label" for="heroMaskColor">Mask colour</label><input id="heroMaskColor" data-key="heroMaskColor" type="color" value="#F2B34C">
+          <p class="control-note">Original hero-inspired designs keep the eye area open. Choose a separate colour for the mask.</p>
+          <label class="field-label" for="heroGloveStyle">Gloves</label><select id="heroGloveStyle" data-key="heroGloveStyle"><option value="none">No gloves</option><option value="cuff">Hero cuffs</option><option value="gauntlet">Armoured gauntlets</option></select>
+          <label class="field-label" for="heroBootStyle">Power boots</label><select id="heroBootStyle" data-key="heroBootStyle"><option value="armored">Armoured toe boots</option><option value="tall">Tall guard boots</option><option value="speed">Speed boots</option><option value="none">No boot armour · formal shoes</option></select>
+        </details>
+        <details class="control-section" data-exclusive-accordion><summary><span class="section-number">08</span><span>Playing card design</span><span class="chevron">⌄</span></summary>
+          <label class="field-label" for="cardScene">Vehicle in card background</label><select id="cardScene" data-key="cardScene"><option value="truck" selected>ZF truck · side view</option><option value="bus">ZF bus · side view</option></select>
+          <p class="control-note">Choose one horizontal ZF bus or truck. The character stands on a separate forecourt area, clear of the vehicle. The wind turbine stays fixed while its blades rotate in the preview and GIF.</p>
+          <label class="field-label" for="cardBackground">Card background</label><select id="cardBackground" data-key="cardBackground"><option value="renewable-hills" selected>Renewable hills</option><option value="city-skyline">City skyline</option><option value="coastal-highway">Coastal highway</option><option value="green-countryside">Green countryside</option><option value="logistics-hub">Logistics hub</option></select>
+          <p class="control-note">The selected scene appears in both the PNG and GIF. The wind turbine remains in every scene and keeps rotating in the GIF.</p>
+          <label class="field-label" for="animationDirection">Road movement direction</label><select id="animationDirection"><option value="left-to-right" selected>Road moves left</option><option value="right-to-left">Road moves right</option></select>
+          <p class="control-note">Create a smooth loop with the original bus or truck artwork fixed in place while the asphalt texture and road markings move beneath it. The turbine blades keep turning.</p>
+        </details>
+      </aside>
+
+      <section class="stage-column" aria-label="Character preview">
+        <div class="stage-card">
+          <div class="stage-toolbar"><div><span class="eyebrow">LIVE FIGURE PREVIEW</span><strong id="figure-name">Brightforge</strong></div><span class="mesh-indicator"><i></i> <span id="part-count">0</span> editable parts</span></div>
+          <div class="canvas-frame" id="canvas-frame"><canvas id="figure-canvas" aria-label="Rendered 3D block figure, drag to rotate"></canvas><div class="canvas-caption"><span>↔ Drag to rotate</span><span id="pose-caption">WAVE HELLO</span></div></div>
+          <div class="angle-tools" role="group" aria-label="Camera angle"><button type="button" data-angle="0">Front</button><button type="button" data-angle="0.42" class="active">3/4</button><button type="button" data-angle="1.57">Side</button><button type="button" data-angle="3.14">Back</button><button type="button" id="png-button" class="download-mini">Save PNG ↓</button></div>
+          <div class="art-direction-note"><span>REFERENCE STYLE</span><p>Block-toy proportions, bold brows, expressive mouths and mix-and-match styling follow the latest character references.</p></div>
+        </div>
+        <div class="engine-row"><div class="engine-icon">▧</div><div><strong>Editable geometry</strong><span>Face, hair, beard, clothing, hands and accessories rebuild as separate parts.</span></div><button type="button" class="text-button" id="mesh-button">Export OBJ + MTL ↗</button></div>
+        <button class="button primary full-button" id="continue-message" type="button">Review card & share →</button>
+      </section>
+    </div>
+
+    <section class="delivery-page panel" id="share-panel" aria-label="Review and share the finished card" hidden>
+      <div class="delivery-heading"><div><p class="eyebrow">STEP 05 · YOUR CARD IS READY</p><h2>Preview, download or share.</h2><p>Both names and the message are already on the card. Choose an output below.</p></div><button class="button secondary" id="back-to-customize" type="button">← Edit character</button></div>
+      <div class="delivery-message-row"><div class="delivery-names"><span>FOR</span><strong id="share-recipient-display"></strong><span>FROM</span><strong id="share-sender-display"></strong></div><div class="delivery-message"><label class="field-label" for="greeting">Message on the card</label><textarea id="greeting" class="text-input greeting-input" data-key="greeting" maxlength="320">Happy International Men’s Day! Your courage, creativity and steady support make every day brighter.</textarea><div class="emoji-toolbar" role="group" aria-label="Add an emoji to your message"><span>Add an emoji</span><button type="button" data-emoji="💙" aria-label="Add blue heart">💙</button><button type="button" data-emoji="😊" aria-label="Add smiling face">😊</button><button type="button" data-emoji="🎉" aria-label="Add celebration">🎉</button><button type="button" data-emoji="🙌" aria-label="Add raised hands">🙌</button><button type="button" data-emoji="✨" aria-label="Add sparkles">✨</button><button type="button" data-emoji="⭐" aria-label="Add star">⭐</button><button type="button" data-emoji="💪" aria-label="Add flexed arm">💪</button></div></div></div>
+      <div class="delivery-share-actions" aria-label="Share this card"><button class="button primary export-action" id="share-card-button" type="button" disabled>Share card</button><button class="button share-link-action export-action" id="copy-share-link-button" type="button" disabled>Copy card link</button></div>
+      <p class="share-email-note" id="share-action-note">Choose Share card to send your PNG and GIF by email. Files prepare automatically. No download starts when sharing.</p>
+      <div class="delivery-formats">
+        <article class="delivery-format-card"><div class="format-heading"><span class="format-icon">PNG</span><div><h3>Share card image</h3><p>High-resolution 5:7 card with its unique QR.</p></div></div><div class="delivery-preview"><canvas id="share-card-preview" width="1080" height="1512" aria-label="Finished greeting card preview"></canvas></div><button class="button primary export-action" id="card-button" type="button" disabled>Download PNG</button></article>
+        <article class="delivery-format-card"><div class="format-heading"><span class="format-icon gif-icon">GIF</span><div><h3>Moving card</h3><p>The vehicle stays whole; the road moves and turbine turns.</p></div></div><div class="delivery-preview gif-preview"><canvas id="gif-card-poster" width="1080" height="1512" aria-label="Animated card poster"></canvas><img id="gif-preview-image" alt="Animated greeting card preview" hidden></div><button class="button gif-export-action export-action" id="gif-button" type="button" disabled><span aria-hidden="true">↻</span> Create GIF</button><p class="share-email-note" id="gif-export-note" aria-live="polite">The GIF preview will appear here after it is created.</p></article>
+      </div>
+      <p class="share-qr-note" id="share-qr-note">A unique QR is prepared for this card.</p>
+      <details class="share-host-config"><summary>QR and link settings</summary><label class="field-label" for="share-base-url">Phone-accessible app URL</label><input id="share-base-url" class="text-input" type="url" placeholder="https://zfcvs.github.io/Mensday_V22/block-figure.html" autocomplete="url"><p>On GitHub Pages this is set automatically to the public ZFCVS URL. Do not use old Netlify links.</p></details>
+      <p class="share-email-note" id="share-link-note">The card link is prepared from your hosted address.</p>
+      <details class="delivery-advanced"><summary>More options</summary><button class="button secondary" type="button" id="copy-button">Copy greeting</button><div class="export-list"><button type="button" id="save-state">Save settings JSON</button><button type="button" id="load-state">Load settings JSON</button><input type="file" id="state-file" accept="application/json,.json" hidden></div></details>
+      <p class="privacy-note">The QR link contains this card’s names, message, qualities and character settings. Anyone with the link can view it. Share only with intended recipients.</p>
+    </section>
+    <footer class="studio-footer" id="studio-footer">GOOD MEN STUDIO <span>·</span> ORIGINAL PROCEDURAL CHARACTER DESIGN</footer>
+  </main>
+  <dialog id="share-dialog" aria-labelledby="share-dialog-title">
+    <div class="share-dialog-heading"><h2 id="share-dialog-title">Share your card</h2><button type="button" id="share-dialog-close" aria-label="Close share choices">×</button></div>
+    <p id="share-preparation-note" role="status" aria-live="polite">Preparing your card…</p>
+    <div class="share-simple-step">
+      <button type="button" id="share-copy-email" class="button secondary full-button" disabled>Step 1 — Click to copy email</button>
+      <p id="share-email-copy-status" role="status" aria-live="polite">Includes your message and both card links.</p>
+    </div>
+    <div class="share-simple-step">
+      <button type="button" id="share-outlook-web" class="button primary full-button">Step 2 — Open Outlook</button>
+      <p>Paste the copied message (Ctrl+V).</p>
+    </div>
+    <div class="share-simple-step">
+      <strong>Step 3 — Attach the card files</strong>
+      <p>Download both files and attach them in Outlook.</p>
+      <div class="share-attachment-actions" role="group" aria-label="Download attachments for Outlook">
+        <button type="button" id="share-download-png" class="button secondary" disabled>Download PNG</button>
+        <button type="button" id="share-download-gif" class="button secondary" disabled>Download GIF</button>
+      </div>
+    </div>
+    <details class="formatted-email-preview"><summary>Preview email text</summary><div id="email-message-preview" aria-label="Formatted email message"></div></details>
+    <details><summary>Other sharing options</summary>
+      <button type="button" id="share-native-button" class="button secondary full-button" disabled>Windows Share</button>
+      <p>Availability depends on installed apps.</p>
+    </details>
+    <button type="button" id="share-dialog-copy" class="button secondary full-button">Copy card link</button>
+  </dialog>
+  <dialog id="ux-guide-dialog" class="ux-guide-dialog" aria-labelledby="ux-guide-title" aria-describedby="ux-guide-message">
+    <div class="ux-guide-content"><h2 id="ux-guide-title"></h2><p id="ux-guide-message"></p>
+      <div class="ux-guide-actions"><button id="ux-guide-secondary" type="button" class="button secondary" hidden></button><button id="ux-guide-primary" type="button" class="button primary"></button></div>
+    </div>
+  </dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./src/block-figure.js"></script>
+</body>
+</html>
