@@ -18,10 +18,10 @@
     .hero h1{margin:17px 0 7px;color:#172d47;font-family:'ZF Prometo',Arial,sans-serif;font-size:clamp(38px,6.4vw,72px);font-weight:500;letter-spacing:-2.6px;line-height:1.03}.tagline{margin:0 0 22px;color:#0a4d91;font-size:clamp(17px,2.5vw,24px);font-weight:500;letter-spacing:.15px}
     .hero-copy{max-width:700px;margin:0 auto;color:#405b75;font-size:15px;font-weight:500;line-height:1.65}.steps-inline{margin:13px auto 0;color:#274f74;font-size:12px;font-weight:500;line-height:1.6}
     .hero-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:11px;margin-top:27px}.cta{display:inline-flex;min-height:48px;align-items:center;justify-content:center;gap:10px;padding:13px 20px;border:1px solid transparent;border-radius:10px;background:linear-gradient(135deg,#0b5ca6,#07396d);box-shadow:0 8px 20px #0a4d9129;color:#fff;text-decoration:none;font-size:13px;font-weight:500;transition:transform .15s,box-shadow .15s}.cta:hover{transform:translateY(-1px);box-shadow:0 11px 25px #0a4d9138}.cta.secondary{border-color:#d8e1e9;background:#fff;color:var(--navy);box-shadow:0 4px 12px #102b4a0b}.cta.secondary:hover{background:#f8fbff}
-    .content-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:18px;max-width:980px;margin:58px auto 0}.journey,.counter-card{padding:23px 25px;border:1px solid #e4e8eb;border-radius:16px;background:#ffffffd9;box-shadow:0 18px 48px #26394e0b}.journey h2,.counter-card h2{margin:0 0 12px;color:var(--navy);font-size:17px;font-weight:500}.journey ol{list-style:none;counter-reset:step;padding:0;margin:0}.journey li{counter-increment:step;display:grid;grid-template-columns:29px 1fr;align-items:start;gap:9px;padding:10px 0;border-top:1px solid #eef0f1;color:#53677e;font-size:11px;line-height:1.5}.journey li:before{content:counter(step,decimal-leading-zero);padding-top:1px;color:#d84f1d;font-size:9px;font-weight:500}
-    .counter-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;background:linear-gradient(145deg,#fff,#f2f6f9)}.counter-card .eyebrow{margin-bottom:10px}.counter-value{display:flex;align-items:baseline;gap:10px;margin:0;color:var(--navy)}.counter-value strong{font-size:clamp(38px,5vw,55px);font-weight:500;letter-spacing:-1.7px;line-height:1}.counter-value span{max-width:220px;color:#52677e;font-size:12px;line-height:1.45}.counter-detail{margin:12px 0 19px;color:#7a8796;font-size:10px;line-height:1.55}.counter-cta{min-height:42px;padding:10px 15px;font-size:11px}
+    .content-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;max-width:740px;margin:36px auto 0}.journey,.journey h2{margin:0 0 12px;color:var(--navy);font-size:17px;font-weight:500}.journey ol{list-style:none;counter-reset:step;padding:0;margin:0}.journey li{counter-increment:step;display:grid;grid-template-columns:29px 1fr;align-items:start;gap:9px;padding:10px 0;border-top:1px solid #eef0f1;color:#53677e;font-size:11px;line-height:1.5}.journey li:before{content:counter(step,decimal-leading-zero);padding-top:1px;color:#d84f1d;font-size:9px;font-weight:500}
+    
     .footer{display:flex;justify-content:space-between;gap:14px;padding:15px 2px 0;border-top:1px solid var(--line);color:#8390a0;font-size:8px;font-weight:500;letter-spacing:.8px}.footer span:last-child{text-align:right}
-    @media(max-width:680px){.shell{padding:12px 16px 16px}.top{height:57px}.mark{width:47px;height:47px}main{padding:48px 0 32px}.hero h1{letter-spacing:-1.5px}.hero-copy{font-size:13px}.steps-inline{font-size:11px}.hero-actions{margin-top:22px}.cta{width:100%;max-width:360px}.content-grid{grid-template-columns:1fr;gap:12px;margin-top:38px}.journey,.counter-card{padding:19px}.footer{font-size:7px;letter-spacing:.4px}}
+    @media(max-width:680px){.shell{padding:12px 16px 16px}.top{height:57px}.mark{width:47px;height:47px}main{padding:48px 0 32px}.hero h1{letter-spacing:-1.5px}.hero-copy{font-size:13px}.steps-inline{font-size:11px}.hero-actions{margin-top:22px}.cta{width:100%;max-width:360px}.content-grid{grid-template-columns:1fr;gap:12px;margin-top:38px}.journey,.footer{font-size:7px;letter-spacing:.4px}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
     /* Legibility and energy pass */
     .shell{max-width:1280px;padding-inline:clamp(16px,3.4vw,48px)}
@@ -36,18 +36,18 @@
     .steps-inline{font-size:15px;color:#274f74;margin-top:17px}
     .hero-actions{gap:13px;margin-top:31px}
     .cta{min-height:56px;padding:15px 23px;border-radius:12px;font-size:16px}
-    .content-grid{gap:20px;max-width:1040px;margin-top:28px}
-    .journey,.counter-card{padding:27px 30px;border-radius:20px;box-shadow:0 16px 42px rgba(17,56,91,.07)}
-    .journey h2,.counter-card h2{font-size:22px}
+    .content-grid{gap:20px;max-width:740px;margin-top:28px}
+    .journey,
+    .journey h2{font-size:22px}
     .journey li{grid-template-columns:38px 1fr;gap:11px;padding:13px 0;font-size:15px;line-height:1.55;color:#435d75}
     .journey li:before{font-size:12px}
-    .counter-card .eyebrow{margin-bottom:12px}
-    .counter-value strong{font-size:clamp(45px,5vw,62px)}
-    .counter-value span{font-size:15px;line-height:1.45}
-    .counter-detail{font-size:13px;line-height:1.55;color:#5a7085}
-    .counter-cta{min-height:50px;padding:13px 18px;font-size:14px}
+    
+    
+    
+    
+    
     .footer{font-size:11px;letter-spacing:.6px;color:#5e7285}
-    @media(max-width:680px){.top{height:64px}.brand strong{font-size:17px}.brand small{font-size:9px}.hero{padding:28px 20px;border-radius:20px}.hero h1{font-size:clamp(37px,10vw,50px);letter-spacing:-1.4px}.hero-copy{font-size:16px}.steps-inline{font-size:13px;line-height:1.7}.cta{min-height:54px;font-size:15px}.content-grid{margin-top:18px}.journey,.counter-card{padding:21px 20px}.journey h2,.counter-card h2{font-size:19px}.journey li{font-size:14px}.counter-value span{font-size:14px}.footer{font-size:9px;line-height:1.5}}
+    @media(max-width:680px){.top{height:64px}.brand strong{font-size:17px}.brand small{font-size:9px}.hero{padding:28px 20px;border-radius:20px}.hero h1{font-size:clamp(37px,10vw,50px);letter-spacing:-1.4px}.hero-copy{font-size:16px}.steps-inline{font-size:13px;line-height:1.7}.cta{min-height:54px;font-size:15px}.content-grid{margin-top:18px}.journey,.journey h2{font-size:19px}.journey li{font-size:14px}.footer{font-size:9px;line-height:1.5}}
   </style>
 </head>
 <body>
@@ -75,16 +75,9 @@
             <li>Write a greeting, then download or share the card with its mobile link.</li>
           </ol>
         </div>
-        <div class="counter-card" aria-live="polite">
-          <span class="eyebrow">PASS ON THE APPRECIATION</span>
-          <h2 class="counter-value"><strong id="wish-count">0</strong><span id="wish-count-label">card downloads recorded on this device</span></h2>
-          <p class="counter-detail" id="count-explainer">This count is saved in this browser. It is not a company-wide total.</p>
-          <a class="cta counter-cta" href="./block-figure.html">Wish someone next <span aria-hidden="true">→</span></a>
-        </div>
       </section>
     </main>
     <footer class="footer"><span>GOOD MEN STUDIO · INTERNATIONAL MEN’S DAY 2026</span><span>Driving Commercial Vehicle Innovation</span></footer>
   </div>
-  <script type="module" src="./src/home.js"></script>
 </body>
 </html>
