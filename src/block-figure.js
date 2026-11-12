@@ -154,16 +154,11 @@ function getCardPoloLogoPlacement(figureState, frame=CARD_CHARACTER_FRAME){
   if(!(figureState.outfit==='zf-polo-white' || figureState.outfit==='zf-polo-navy')) return null;
   const patch=buildFigureGeometry(figureState).parts.find(part=>part.name==='zf_brand_patch');
   if(!patch) return null;
-  // The chest decal is on the FRONT face (vertices 4–7). Previous code
-  // summed all eight corners but divided by four, doubling x/y and placing
-  // the logo in the card's MESSAGE area instead of on the shirt.
-  const face=patch.vertices.slice(4,8).map(point=>projectPoint(point,frame));
-  const [x,y]=face.reduce(([sx,sy],[px,py])=>[sx+px,sy+py],[0,0]).map(v=>v/face.length);
-  const width=(Math.hypot(face[1][0]-face[0][0], face[1][1]-face[0][1]) + Math.hypot(face[2][0]-face[3][0], face[2][1]-face[3][1]))/2;
-  const height=(Math.hypot(face[3][0]-face[0][0], face[3][1]-face[0][1]) + Math.hypot(face[2][0]-face[1][0], face[2][1]-face[1][1]))/2;
-  // Export scene artwork ends at y=953; an off-shirt logo must never be drawn.
-  if(!Number.isFinite(x)||!Number.isFinite(y)||y<360||y>850||x<60||x>570)return null;
-  return { x,y, size:Math.max(20, Math.min(32, Math.max(width,height)*1.08)), variant:figureState.outfit==='zf-polo-white'?'blue':'white' };
+  const projected=patch.vertices.map(point=>projectPoint(point, frame));
+  const center=projected.reduce((acc,[x,y])=>[acc[0]+x,acc[1]+y],[0,0]).map(value=>value/4);
+  const width=(Math.hypot(projected[1][0]-projected[0][0], projected[1][1]-projected[0][1]) + Math.hypot(projected[2][0]-projected[3][0], projected[2][1]-projected[3][1]))/2;
+  const height=(Math.hypot(projected[3][0]-projected[0][0], projected[3][1]-projected[0][1]) + Math.hypot(projected[2][0]-projected[1][0], projected[2][1]-projected[1][1]))/2;
+  return { x:center[0], y:center[1], size:Math.max(20, Math.min(32, Math.max(width,height)*1.08)), variant:figureState.outfit==='zf-polo-white'?'blue':'white' };
 }
 function blinkAtFrame(index, frameCount){
   const closeEnough=(target,width=1)=>Math.abs(index-target)<=width;
@@ -945,31 +940,29 @@ function shareCard(){
   shareDelivery.prepare().catch(error=>{if(error.name==='StaleShareError')queueSharePreparation();});
 }
 function openOutlookWebDraft(){
-  // A compose deep link is plain text, not HTML. Prefill the entire message
-  // synchronously on the user's click. Outlook will usually auto-link the two
-  // full https URLs. Custom display labels are available via Copy formatted email.
+  // Always build the complete compose URL before opening Outlook. No asynchronous
+  // clipboard operation and no intermediate about:blank page are required.
   const note=$('share-preparation-note');
   let message;
   try { message=currentEmailMessage(); }
   catch(error){if(note)note.textContent='Card link unavailable: '+error.message;return;}
-  const subject=cardShareSubject();
-  const base='https://outlook.office.com/mail/deeplink/compose?subject='+encodeURIComponent(subject);
-  const draft=base+'&body='+encodeURIComponent(message.plain);
-  // Navigation occurs immediately inside the click handler, preventing the
-  // previous clipboard-promise/popup timing problem.
-  if(draft.length>6500){
-    // For an unusually long card URL, opening subject-only without saying why
-    // is worse than offering a deliberate manual rich-text fallback.
-    if(note)note.textContent='This card link is unusually long. Use “Preview email text” to copy the full message, then open Outlook and paste it.';
-    return;
-  }
-  const popup=window.open(draft,'_blank');
-  if(popup){
-    try{popup.opener=null;}catch{}
-    if(note)note.textContent='Outlook opened with your subject, greeting and both card links. Enter the recipient and send.';
-  }else if(note){
-    note.textContent='Your browser blocked Outlook. Allow pop-ups for this website and click Share via Outlook again.';
-  }
+  const composeUrl=new URL('https://outlook.office.com/mail/deeplink/compose');
+  composeUrl.searchParams.set('subject',cardShareSubject());
+  // Explicit CRLF separators help Outlook recognize URLs as links.
+  composeUrl.searchParams.set('body',message.plain.replace(/\r?\n/g,'\r\n')+'\r\n');
+  const destination=composeUrl.href;
+  // This is called synchronously by the real user click, keeping user activation.
+  // If pop-ups are restricted, opening in the existing tab is a functional fallback.
+  try {
+    const tab=window.open(destination,'_blank');
+    if(tab){
+      try{tab.opener=null;}catch{}
+      if(note)note.textContent='Outlook draft opened with the subject, greeting and both card URLs. Enter the recipient’s email address and send.';
+      return;
+    }
+  } catch(error) { /* Browser policy can block opening a new tab. */ }
+  if(note)note.textContent='A new tab was blocked. Opening the prepared Outlook draft in this tab instead.';
+  window.location.assign(destination);
 }
 
 function downloadPreparedAttachment(extension){
