@@ -940,30 +940,57 @@ function shareCard(){
   shareDelivery.prepare().catch(error=>{if(error.name==='StaleShareError')queueSharePreparation();});
 }
 function openOutlookWebDraft(){
-  // Always build the complete compose URL before opening Outlook. No asynchronous
-  // clipboard operation and no intermediate about:blank page are required.
+  // Outlook deep links can fail when a personalized card token makes the
+  // compose URL too long. Never navigate to an oversized compose URL.
   const note=$('share-preparation-note');
   let message;
   try { message=currentEmailMessage(); }
   catch(error){if(note)note.textContent='Card link unavailable: '+error.message;return;}
-  const composeUrl=new URL('https://outlook.office.com/mail/deeplink/compose');
-  composeUrl.searchParams.set('subject',cardShareSubject());
-  // Explicit CRLF separators help Outlook recognize URLs as links.
-  composeUrl.searchParams.set('body',message.plain.replace(/\r?\n/g,'\r\n')+'\r\n');
-  const destination=composeUrl.href;
-  // This is called synchronously by the real user click, keeping user activation.
-  // If pop-ups are restricted, opening in the existing tab is a functional fallback.
-  try {
-    const tab=window.open(destination,'_blank');
+
+  const subjectOnly=new URL('https://outlook.office.com/mail/deeplink/compose');
+  subjectOnly.searchParams.set('subject',cardShareSubject());
+
+  const fullDraft=new URL(subjectOnly.href);
+  fullDraft.searchParams.set('body',message.plain.replace(/\r?\n/g,'\r\n')+'\r\n');
+
+  // Conservative URL-length guard. This is a compatibility safeguard, not an
+  // officially published Outlook limit.
+  const LONG_DRAFT_THRESHOLD=1100;
+  if(fullDraft.href.length<=LONG_DRAFT_THRESHOLD){
+    const tab=window.open(fullDraft.href,'_blank');
     if(tab){
       try{tab.opener=null;}catch{}
-      if(note)note.textContent='Outlook draft opened with the subject, greeting and both card URLs. Enter the recipient’s email address and send.';
-      return;
+      if(note)note.textContent='Outlook opened with your subject, greeting and both card URLs. Enter the recipient and send.';
+    }else if(note){
+      note.textContent='Outlook pop-up blocked. Allow pop-ups for this site, then try again.';
     }
-  } catch(error) { /* Browser policy can block opening a new tab. */ }
-  if(note)note.textContent='A new tab was blocked. Opening the prepared Outlook draft in this tab instead.';
-  window.location.assign(destination);
+    return;
+  }
+
+  // A long card URL cannot reliably be prefilled through a compose deep link.
+  // Request clipboard copying within the button click before opening a short URL.
+  let copyResult;
+  try {
+    copyResult=copyEmailMessage(navigator.clipboard,globalThis.ClipboardItem,message);
+  } catch(error) {
+    copyResult=Promise.reject(error);
+  }
+  const tab=window.open(subjectOnly.href,'_blank');
+  if(tab){try{tab.opener=null;}catch{}}
+  if(note)note.textContent=tab
+    ? 'Long card link: preparing the complete email for copying. Outlook opens with the subject.'
+    : 'Outlook pop-up blocked. Allow pop-ups, or open Outlook manually.';
+
+  Promise.resolve(copyResult).catch(async()=>{
+    if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
+    return navigator.clipboard.writeText(message.plain);
+  }).then(()=>{
+    if(note)note.textContent='Full email copied, including both card links. In Outlook, click the message body and press Ctrl+V, then send.';
+  }).catch(()=>{
+    if(note)note.textContent='Automatic copy was blocked. Open “Preview email text” and use “Copy formatted email”, then paste into Outlook.';
+  });
 }
+
 
 function downloadPreparedAttachment(extension){
   const prepared=shareDelivery.getReady();
