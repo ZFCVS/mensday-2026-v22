@@ -155,7 +155,7 @@ function getCardPoloLogoPlacement(figureState, frame=CARD_CHARACTER_FRAME){
   const patch=buildFigureGeometry(figureState).parts.find(part=>part.name==='zf_brand_patch');
   if(!patch) return null;
   const projected=patch.vertices.map(point=>projectPoint(point, frame));
-  const center=projected.reduce((acc,[x,y])=>[acc[0]+x,acc[1]+y],[0,0]).map(value=>value/4);
+  const center=projected.reduce((acc,[x,y])=>[acc[0]+x,acc[1]+y],[0,0]).map(value=>value/8);
   const width=(Math.hypot(projected[1][0]-projected[0][0], projected[1][1]-projected[0][1]) + Math.hypot(projected[2][0]-projected[3][0], projected[2][1]-projected[3][1]))/2;
   const height=(Math.hypot(projected[3][0]-projected[0][0], projected[3][1]-projected[0][1]) + Math.hypot(projected[2][0]-projected[1][0], projected[2][1]-projected[1][1]))/2;
   return { x:center[0], y:center[1], size:Math.max(20, Math.min(32, Math.max(width,height)*1.08)), variant:figureState.outfit==='zf-polo-white'?'blue':'white' };
