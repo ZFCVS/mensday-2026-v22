@@ -53,6 +53,7 @@ const COLOR_KEYS=new Set(['skin','eyeColor','hairColor','topColor','accentColor'
 const BOOLEAN_KEYS=new Set(['teethVisible','sunglasses','mask','glasses','cap','headphones','backpack','watch','pin','heroMode']);
 const STYLES=['welcome','bold','inventive','dynamic','playful','steady'];
 const encoder=new TextEncoder(),decoder=new TextDecoder();
+const MAX_TOKEN_CHARS=12000, MAX_COMPRESSED_BYTES=9000, MAX_EXPANDED_BYTES=65536;
 
 class Writer{
   constructor(){this.bytes=[];}
@@ -80,7 +81,9 @@ function base64UrlEncode(bytes){
   return result;
 }
 function base64UrlDecode(text){
-  const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';const clean=String(text).replace(/[^A-Za-z0-9_-]/g,'');const output=[];let buffer=0,bits=0;
+  const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  if(typeof text!=='string'||text.length>MAX_TOKEN_CHARS||!/^[A-Za-z0-9_-]+$/.test(text))throw new Error('Invalid or oversized card link.');
+  const clean=text;const output=[];let buffer=0,bits=0;
   for(const char of clean){const value=alphabet.indexOf(char);if(value<0)continue;buffer=(buffer<<6)|value;bits+=6;if(bits>=8){bits-=8;output.push((buffer>>>bits)&255);}}
   return new Uint8Array(output);
 }
@@ -124,8 +127,10 @@ function writeBinaryPayload(payload){
   return writer.finish();
 }
 function readBinaryPayload(bytes){
+  if(bytes.length>MAX_EXPANDED_BYTES)throw new Error('Card link exceeds the supported size.');
   const reader=new Reader(bytes),version=reader.u8();if(version!==1&&version!==2&&version!==3&&version!==4&&version!==5&&version!==6)throw new Error('This card link uses an unsupported data version.');
   const id=readId(reader),recipient=reader.string(),sender=reader.string(),figure={...DEFAULT_FIGURE};
+  if(recipient.length>50||sender.length>50||id.length>120)throw new Error('Invalid card identity.');
   const fields=version===1?LEGACY_SHARE_FIELDS:version===2?VERSION2_SHARE_FIELDS:version===3?VERSION3_SHARE_FIELDS:version===4?VERSION4_SHARE_FIELDS:version===5?VERSION5_SHARE_FIELDS:SHARE_FIELDS;
   const bitmap=reader.raw(Math.ceil(fields.length/8));
   let retiredIdentity=false;
@@ -134,10 +139,12 @@ function readBinaryPayload(bytes){
   if(reader.u8()){
     const seed=reader.u32(),variation=reader.u8(),dominant=STYLES[reader.u8()],secondary=STYLES[reader.u8()],count=reader.u8();
     if(!dominant||!secondary||count>20)throw new Error('This card link has an invalid personality profile.');
-    const qualities=[];for(let i=0;i<count;i++){const trait=TRAIT_NAMES[reader.u8()];const score=reader.u8();if(!trait)throw new Error('This card link has an unknown personality quality.');qualities.push({trait,score});}
+    const qualities=[];for(let i=0;i<count;i++){const trait=TRAIT_NAMES[reader.u8()];const score=reader.u8();if(!trait||score>100)throw new Error('This card link has an invalid personality score.');qualities.push({trait,score});}
     figure.personalityProfile={seed,variation,dominant,secondary,qualities};figure.qualities=qualities.map(q=>q.trait).join(', ');
   }
   const yaw=reader.u16()/65535*(2*Math.PI),pitch=reader.i16()/1000,zoom=reader.u8()/100;
+  if(!Number.isFinite(yaw)||pitch<-.21||pitch>.37||zoom<.81||zoom>1.29)throw new Error('Invalid card camera settings.');
+  if(typeof figure.greeting!=='string'||figure.greeting.length>320)throw new Error('Card message is too long.');
   if(reader.offset!==reader.bytes.length)throw new Error('This card link contains unexpected extra data.');
   return{schema:'goodmen-share-card-v1',id,recipient,sender,figure,camera:{yaw,pitch,zoom}};
 }
@@ -155,8 +162,30 @@ function expandLegacyPayload(compact){
   const[yaw=420,pitch=100,zoom=100]=compact[5]||[];return{schema:'goodmen-share-card-v1',id:compact[1],recipient:compact[2],sender:String(compact[6]||'').slice(0,50),figure,camera:{yaw:yaw/1000,pitch:pitch/1000,zoom:zoom/100}};
 }
 async function gzip(bytes,kind){
-  const Constructor=kind==='compress'?globalThis.CompressionStream:globalThis.DecompressionStream;if(typeof Constructor!=='function')throw new Error('This browser cannot open the compressed card link.');
-  const stream=new Blob([bytes]).stream().pipeThrough(new Constructor('gzip'));return new Uint8Array(await new Response(stream).arrayBuffer());
+  const Constructor=kind==='compress'?globalThis.CompressionStream:globalThis.DecompressionStream;
+  if(typeof Constructor!=='function')throw new Error('This browser cannot open the compressed card link.');
+  if(kind==='decompress' && bytes.length>MAX_COMPRESSED_BYTES)throw new Error('Card link is too large.');
+  const reader=new Blob([bytes]).stream().pipeThrough(new Constructor('gzip')).getReader();
+  const chunks=[];let total=0;
+  try{
+    while(true){
+      const {value,done}=await reader.read();if(done)break;
+      total+=value.byteLength;
+      if(total>MAX_EXPANDED_BYTES){await reader.cancel();throw new Error('Card link is too large to open safely.');}
+      chunks.push(value);
+    }
+    const output=new Uint8Array(total);let cursor=0;
+    for(const chunk of chunks){output.set(chunk,cursor);cursor+=chunk.byteLength;}
+    return output;
+  }finally{reader.releaseLock();}
+}
+function validateDecodedPayload(payload){
+  if(!payload||typeof payload!=='object'||typeof payload.recipient!=='string'||payload.recipient.length>50||typeof payload.sender!=='string'||payload.sender.length>50)throw new Error('This card contains invalid names.');
+  if(!payload.figure||typeof payload.figure!=='object'||typeof payload.figure.greeting!=='string'||payload.figure.greeting.length>320)throw new Error('This card contains invalid details.');
+  const profile=payload.figure.personalityProfile;
+  if(profile && (!Array.isArray(profile.qualities)||profile.qualities.length>5||profile.qualities.some(q=>!TRAIT_NAMES.includes(q.trait)||!Number.isInteger(q.score)||q.score<0||q.score>100)))throw new Error('This card contains invalid scores.');
+  if(!payload.camera||!['yaw','pitch','zoom'].every(key=>Number.isFinite(payload.camera[key]))||Math.abs(payload.camera.yaw)>7||payload.camera.pitch<-.21||payload.camera.pitch>.37||payload.camera.zoom<.81||payload.camera.zoom>1.29)throw new Error('This card contains invalid camera settings.');
+  return payload;
 }
 export async function encodeShareToken(payload){
   const binary=writeBinaryPayload(payload);
@@ -164,11 +193,13 @@ export async function encodeShareToken(payload){
   return'u'+base64UrlEncode(binary);
 }
 export async function decodeShareToken(token){
-  if(token.startsWith('b'))return readBinaryPayload(await gzip(base64UrlDecode(token.slice(1)),'decompress'));
-  if(token.startsWith('u'))return readBinaryPayload(base64UrlDecode(token.slice(1)));
-  const data=base64UrlDecode(token.slice(1));let bytes=data;
-  if(token.startsWith('z'))bytes=await gzip(data,'decompress');
-  else if(!token.startsWith('j'))throw new Error('This card link uses an unknown format.');
-  return expandLegacyPayload(JSON.parse(decoder.decode(bytes)));
+  if(typeof token!=='string'||token.length<2||token.length>MAX_TOKEN_CHARS||!/^[buzj][A-Za-z0-9_-]+$/.test(token))throw new Error('Invalid or oversized card link.');
+  const data=base64UrlDecode(token.slice(1));
+  if(data.length>MAX_COMPRESSED_BYTES)throw new Error('Card link exceeds size limit.');
+  if(token.startsWith('b'))return validateDecodedPayload(readBinaryPayload(await gzip(data,'decompress')));
+  if(token.startsWith('u'))return validateDecodedPayload(readBinaryPayload(data));
+  const bytes=token.startsWith('z')?await gzip(data,'decompress'):data;
+  if(bytes.length>MAX_EXPANDED_BYTES)throw new Error('Card link exceeds size limit.');
+  return validateDecodedPayload(expandLegacyPayload(JSON.parse(decoder.decode(bytes))));
 }
 export { SHARE_FIELDS, LEGACY_SHARE_FIELDS, VERSION2_SHARE_FIELDS, VERSION3_SHARE_FIELDS, VERSION4_SHARE_FIELDS, VERSION5_SHARE_FIELDS };
