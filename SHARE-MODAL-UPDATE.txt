@@ -1,0 +1,30 @@
+V22 SHARE MODAL — GITHUB PAGES UPDATE
+
+DESIGN: Outlook-first sharing modal aligned to the approved image concept.
+REPLACE ONLY:
+  block-figure.html
+  src/block-figure.css
+
+Existing JavaScript handlers and IDs are unchanged.
+- Share via Outlook: share-outlook-web
+- PNG / GIF: share-download-png, share-download-gif
+- Copy card link: share-dialog-copy
+- Preview email text: email-message-preview
+- Optional advanced functions retained.
+
+GITHUB DEPLOY
+1. Extract 'Only Changed' ZIP.
+2. Upload both files to the repository preserving src/ folder.
+3. Commit to main.
+4. Confirm GitHub Pages deployment succeeds.
+5. Hard refresh and test the modal, both buttons and Outlook.
+
+VERIFY BEFORE BROAD ROLLOUT
+- Desktop and mobile visual layout
+- Outlook prefill of both personalized card and create-new links
+- PNG and GIF download after preparation
+- QR scanning and personalized card reproduction
+- No regression in qualities selection or character creation
+
+IMPORTANT: Existing URL-length fallback for Outlook remains unchanged; large links can still require copying/pasting once.
+The browser runtime used for authoring blocked local-file and localhost navigation, therefore complete visual/browser tests were not possible.
