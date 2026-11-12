@@ -940,41 +940,41 @@ function shareCard(){
   shareDelivery.prepare().catch(error=>{if(error.name==='StaleShareError')queueSharePreparation();});
 }
 function openOutlookWebDraft(){
-  // Outlook's compose deep link accepts plain text only; its body length is
-  // not guaranteed. Try a moderately sized encoded email, otherwise provide
-  // an explicit copy/paste fallback instead of pretending the body was sent.
+  // Outlook compose deep links accept plain text only. Use the rich clipboard
+  // message to preserve the two labelled hyperlinks on paste instead of
+  // placing an unreadably long URL in the Outlook body.
   const note=$('share-preparation-note');
   let message;
   try { message=currentEmailMessage(); }
   catch(error){if(note)note.textContent='Card link unavailable: '+error.message;return;}
   const subject=cardShareSubject();
   const subjectOnly='https://outlook.office.com/mail/deeplink/compose?subject='+encodeURIComponent(subject);
-  const withBody=subjectOnly+'&body='+encodeURIComponent(message.plain);
+  const plainDraft=subjectOnly+'&body='+encodeURIComponent(message.plain);
+  // Open synchronously in the user's click handler to avoid popup blockers.
   const popup=window.open('about:blank','_blank');
   if(!popup){
-    if(note)note.textContent='Your browser blocked Outlook. Allow pop-ups for this website, then try again.';
+    if(note)note.textContent='Your browser blocked Outlook. Allow pop-ups, then try Share via Outlook again.';
     return;
   }
-  // Larger links are susceptible to being silently dropped by Outlook.
-  // Opening a blank-body draft without an explanation led to user confusion.
-  const useDirectBody=withBody.length<=5000;
-  if(useDirectBody){
-    popup.location.replace(withBody);
-    if(note)note.textContent='Outlook is opening with Dear '+recipientName.trim()+', the full greeting and both card links. Review before sending.';
-    return;
-  }
-  // Rich clipboard fallback for links that would create an unreliable deep link.
-  popup.location.replace(subjectOnly);
-  if(note)note.textContent='This personalized card link is too long for reliable Outlook prefill. The complete email is being copied. Paste it into the Outlook message body (Ctrl+V).';
-  try{
-    Promise.resolve(copyEmailMessage(navigator.clipboard,globalThis.ClipboardItem,message)).then(()=>{
-      if(note)note.textContent='Full email copied, including Dear '+recipientName.trim()+', the wish and both links. Paste in Outlook (Ctrl+V).';
-    }).catch(()=>{
-      if(note)note.textContent='Copy was blocked. Expand “Preview email text”, select all the message and paste it into Outlook.';
-    });
-  }catch(error){
-    if(note)note.textContent='Expand “Preview email text”, copy the message, and paste it into Outlook.';
-  }
+  const openDraft=(url)=>{try{if(!popup.closed)popup.location.replace(url);}catch{}};
+  if(note)note.textContent='Preparing two clickable links for Outlook…';
+  let copied;
+  try{copied=copyEmailMessage(navigator.clipboard,globalThis.ClipboardItem,message);}
+  catch(error){copied=Promise.reject(error);}
+  Promise.resolve(copied).then(()=>{
+    openDraft(subjectOnly);
+    if(note)note.textContent='Outlook opened. Click inside the blank message and paste (Ctrl+V). Your greeting and both clickable labels are copied.';
+  }).catch(()=>{
+    // Preserve the working one-click experience when clipboard permissions
+    // are denied. Plain URLs are still valid and often clickable in Outlook.
+    if(plainDraft.length<=5000){
+      openDraft(plainDraft);
+      if(note)note.textContent='Formatted copy was blocked. Outlook opened with your full greeting and both original URLs instead.';
+    }else{
+      openDraft(subjectOnly);
+      if(note)note.textContent='Formatted copy was blocked. Open “Preview email text” and copy it into the Outlook draft; this card URL is too long for reliable automatic prefilling.';
+    }
+  });
 }
 function downloadPreparedAttachment(extension){
   const prepared=shareDelivery.getReady();
