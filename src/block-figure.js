@@ -23,6 +23,25 @@ let recipientName = '', senderName = '', generationSeed = 0, generated = null, h
 let superheroWasUnlocked = false;
 let userCustomizedCharacter = false, customizationGuideShown = false;
 let yaw = .42, pitch = .10, zoom = 1, drag = null, toastTimer = 0, randomizeCount = 0;
+let firstShowSpinFrame = 0;
+const stopIntroSpin = () => { if(firstShowSpinFrame) cancelAnimationFrame(firstShowSpinFrame); firstShowSpinFrame=0; };
+function startIntroSpin(){
+  stopIntroSpin();
+  const target=1.18;
+  if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches){yaw=target;draw();return;}
+  const start=performance.now(),duration=1800,initial=.42;
+  const frame=now=>{
+    if($('studio-grid').hidden){stopIntroSpin();return;}
+    const t=Math.min(1,(now-start)/duration);
+    const eased=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    yaw=initial+(Math.PI*2+target-initial)*eased;
+    renderMesh(canvas,ctx,state);
+    firstShowSpinFrame=t<1?requestAnimationFrame(frame):0;
+    if(t===1){yaw=target;draw();}
+  };
+  firstShowSpinFrame=requestAnimationFrame(frame);
+}
+
 let undoStack = [], redoStack = [];
 const canvas = $('figure-canvas'), ctx = canvas.getContext('2d');
 const shareCardPreview = $('share-card-preview'), shareCardPreviewCtx = shareCardPreview.getContext('2d');
@@ -190,12 +209,27 @@ function setState(patch, record = true) {
   }
   syncControls();draw();
 }
+function updateSmileOptions(){
+  const selector=$('mouthStyle');
+  if(!selector)return;
+  const teethOn=state.teethVisible;
+  const allowed = new Set(['auto','grin','open','laugh','wide-grin']);
+  for(const option of selector.options){
+    const blocked=teethOn&&!allowed.has(option.value);
+    option.disabled=blocked;
+    option.hidden=blocked;
+  }
+  const label=$('teeth-rule-hint');
+  if(label)label.textContent=teethOn?'Teeth enabled: only open-smile choices are available.':'Teeth off: all mouth styles are available.';
+  const teethStyle=$('teethStyle');if(teethStyle)teethStyle.disabled=!teethOn;
+}
 function syncControls() {
   document.querySelectorAll('[data-key]').forEach(el=>{
     const key=el.dataset.key;if(!(key in state))return;
     if(el.type==='checkbox')el.checked=state[key];
     else if(el.value!==String(state[key]))el.value=state[key];
   });
+  updateSmileOptions();
   const brandedPolo=state.outfit==='zf-polo-white'||state.outfit==='zf-polo-navy';
   $('topColor').disabled=brandedPolo;
   $('top-color-note').textContent=brandedPolo
@@ -1132,8 +1166,8 @@ function chooseVariation(variation) {
   syncControls();draw();
   if(!customizationGuideShown){
     customizationGuideShown=true;
-    guidePopup('Make this character your own','Explore the controls on the left: try a hairstyle, outfit, expression, pose or accessory. You can undo changes or restore the original at any time.','Explore customization',promptCustomization,'Keep this look',()=>{$('customization-guide').hidden=true;});
-  }else{promptCustomization();}
+    guidePopup('Make this character your own','Explore the controls on the left: try a hairstyle, outfit, expression, pose or accessory. You can undo changes or restore the original at any time.','Explore customization',()=>{startIntroSpin();promptCustomization();},'Keep this look',()=>{startIntroSpin();$('customization-guide').hidden=true;});
+  }else{startIntroSpin();promptCustomization();}
   toast(`${variation.name} selected. Your personality profile is attached.`);
 }
 function showVariations() {
@@ -1191,6 +1225,7 @@ function historyUndo(){if(!undoStack.length)return;redoStack.push(clone(state));
 function historyRedo(){if(!redoStack.length)return;undoStack.push(clone(state));state=redoStack.pop();syncControls();draw();}
 
 function applyCharacterControl(key,value){
+  stopIntroSpin();
   try{
     if(key==='heroLookPreset')setState(applySuperheroLookPreset(state,value));
     else setState({[key]:value});
@@ -1219,7 +1254,7 @@ document.querySelectorAll('[data-skin]').forEach(button=>button.addEventListener
   setState(next);
   toast(`${hero.name} selected. Face, hair, skin and proportions are preserved.`);
 });
-document.querySelectorAll('[data-angle]').forEach(button=>button.addEventListener('click',()=>{
+document.querySelectorAll('[data-angle]').forEach(button=>button.addEventListener('click',()=>{stopIntroSpin();
   yaw=Number(button.dataset.angle);pitch=.08;document.querySelectorAll('[data-angle]').forEach(item=>item.classList.toggle('active',item===button));draw();
 }));
 setupExclusiveAccordions();renderTraitSelector();renderScoreControls();
@@ -1327,7 +1362,7 @@ syncControls();
 const initialShareToken=globalThis.location?.hash?.startsWith('#gms=')?globalThis.location.hash.slice(5):'';
 if(initialShareToken)openMobileShare(initialShareToken);else draw();
 const frame=$('canvas-frame');
-frame.addEventListener('pointerdown',event=>{drag={x:event.clientX,y:event.clientY,yaw,pitch};canvas.setPointerCapture(event.pointerId);});
+frame.addEventListener('pointerdown',event=>{stopIntroSpin();drag={x:event.clientX,y:event.clientY,yaw,pitch};canvas.setPointerCapture(event.pointerId);});
 frame.addEventListener('pointermove',event=>{if(!drag)return;yaw=drag.yaw+(event.clientX-drag.x)*.009;pitch=Math.max(-.20,Math.min(.36,drag.pitch+(event.clientY-drag.y)*.004));draw();});
 const finishDrag=()=>{drag=null;};frame.addEventListener('pointerup',finishDrag);frame.addEventListener('pointercancel',finishDrag);
 frame.addEventListener('wheel',event=>{event.preventDefault();zoom=Math.max(.82,Math.min(1.28,zoom+(event.deltaY<0?.055:-.055)));draw();},{passive:false});

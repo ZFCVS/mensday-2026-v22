@@ -129,6 +129,9 @@ export function generateSuperheroVariations(qualities, seed=0, baseFigure=DEFAUL
   const dominant=groups[0]||'guardian',secondary=groups[1]||dominant;
   const pairKey=[dominant,secondary].sort().join('+');
   const paletteBase=(GROUP_INDEX[dominant]+GROUP_INDEX[secondary])%SUIT_PALETTES.length;
+  // Exactly one of three hero candidates wears an official ZF polo.
+  const poloIndex=(seed+paletteBase)%3;
+  const poloOutfit=(seed%2===0)?'zf-polo-navy':'zf-polo-white';
   const variations=names.map((name,index)=>{
     const palette=SUIT_PALETTES[(paletteBase+seed+index)%SUIT_PALETTES.length];
     const heroLookPreset=(GROUP_HERO_LOOKS[dominant]||GROUP_HERO_LOOKS.guardian)[index];
@@ -148,28 +151,33 @@ export function generateSuperheroVariations(qualities, seed=0, baseFigure=DEFAUL
       ...visualGear,heroLookPreset,
       personalityProfile:{qualities:profile.qualities,seed,variation:index,dominant:profile.dominant,secondary:profile.secondary}
     });
+    // The corporate-polo option is a character identity, not layered over a hero suit.
+    // Its face, personality and power narrative remain those of its generated hero.
+    const shownFigure=index===poloIndex
+      ? normalizeFigure({...figure,outfit:poloOutfit,heroMode:false,heroCapeStyle:'none',heroEyeMaskStyle:'none',heroGloveStyle:'none',heroBootStyle:'none'})
+      : figure;
     return {
-      id:figure.heroIdentityId,index,name,identityName:name,
-      visualDirection:`${lookLabel} · ${figure.heroEyeMaskStyle==='none'?'open face':figure.heroEyeMaskStyle.replaceAll('-',' ')} · ${figure.heroCapeStyle} cape · ${figure.pose.replaceAll('-',' ')}`,
+      id:shownFigure.heroIdentityId,index,name,identityName:name,
+      visualDirection:`${index===poloIndex?(poloOutfit==='zf-polo-navy'?'ZF navy polo':'ZF white polo'):lookLabel} · ${shownFigure.heroEyeMaskStyle==='none'?'open face':shownFigure.heroEyeMaskStyle.replaceAll('-',' ')} · ${shownFigure.heroCapeStyle==='none'?'no cape':shownFigure.heroCapeStyle+' cape'} · ${figure.pose.replaceAll('-',' ')}`,
       explanation:`A distinct block-character superpower concept influenced by ${eligibility.eligibleQualities.map(q=>`${q.trait} ${q.score}`).join(' and ')}. Face, skin, age, hair and body proportions remain independent choices.`,
-      powers,figure
+      powers,figure:shownFigure
     };
   });
   return {seed,profile,qualifyingQualities:eligibility.eligibleQualities,variations};
 }
 
 export function applySuperheroIdentity(currentFigure, identity) {
-  if(!identity?.figure?.heroMode) throw new TypeError('Choose a generated superpower identity');
+  if(!identity?.figure) throw new TypeError('Choose a generated superpower identity');
   const current=normalizeFigure(currentFigure);
   const hero=identity.figure;
   return normalizeFigure({
     ...current,
     name:hero.name,tagline:hero.tagline,
-    heroMode:true,heroIdentityId:hero.heroIdentityId,heroIdentityName:hero.heroIdentityName,
+    heroMode:hero.heroMode,heroIdentityId:hero.heroIdentityId,heroIdentityName:hero.heroIdentityName,
     heroPower:hero.heroPower,
     heroSuitStyle:hero.heroSuitStyle,heroCapeStyle:hero.heroCapeStyle,heroCapeColor:hero.heroCapeColor,
     heroEyeMaskStyle:hero.heroEyeMaskStyle,heroMaskColor:hero.heroMaskColor,heroLookPreset:hero.heroLookPreset,heroEmblem:hero.heroEmblem,heroGloveStyle:hero.heroGloveStyle,heroBootStyle:hero.heroBootStyle,
-    outfit:'hero-suit',topColor:hero.topColor,accentColor:hero.accentColor,pantsColor:hero.pantsColor,
+    outfit:hero.outfit,topColor:hero.topColor,accentColor:hero.accentColor,pantsColor:hero.pantsColor,
     footwear:'boot',pose:hero.pose,expression:hero.expression,
     personalityProfile:current.personalityProfile||hero.personalityProfile
   });

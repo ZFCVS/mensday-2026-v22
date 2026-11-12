@@ -97,6 +97,23 @@ export function normalizeFigure(input = {}) {
   if (!Object.hasOwn(compatible, 'headphonesStyle')) compatible.headphonesStyle = compatible.headphones ? 'studio' : 'none';
   if (!Object.hasOwn(compatible, 'bagStyle')) compatible.bagStyle = compatible.backpack ? 'backpack' : 'none';
   const state = { ...DEFAULT_FIGURE, ...compatible };
+  // Character control invariants: normal clothing must never carry hero overlays.
+  // Changing a hero to an ordinary outfit also clears the rendered cape/armour state.
+  if (state.outfit !== 'hero-suit') {
+    state.heroMode = false;
+    state.heroCapeStyle = 'none';
+    state.heroEyeMaskStyle = 'none';
+    state.heroGloveStyle = 'none';
+    state.heroBootStyle = 'none';
+  }
+  // A checked teeth toggle means the mouth must actually expose teeth.
+  // 'auto' is resolved from the expression; if it resolves closed, use a grin.
+  if (state.teethVisible) {
+    const openMouthStyles = new Set(['grin','open','laugh','wide-grin']);
+    const automaticOpenExpressions = new Set(['grin','surprised','excited','joyful','laughing','astonished','playful']);
+    if (state.mouthStyle === 'auto' && !automaticOpenExpressions.has(state.expression)) state.mouthStyle = 'grin';
+    else if (state.mouthStyle !== 'auto' && !openMouthStyles.has(state.mouthStyle)) state.mouthStyle = 'grin';
+  }
   for (const key of Object.keys(enums)) if (!enums[key].includes(state[key])) state[key] = DEFAULT_FIGURE[key];
   // Older saved drafts used a mixed vehicle scene; keep them valid with one selected backdrop.
   // Old saved front-angle truck views now resolve to the approved horizontal side view.
@@ -672,6 +689,13 @@ export function buildFigureGeometry(input = {}) {
   if(s.hairstyle!=='bald'){
     const capW=hw*1.04, capD=hd*1.04;
     add('hair_cap',0,topY-.015,.005,capW,.22*H,capD,hair,'hair');
+    // Provide consistent rear and temple coverage for every non-bald hairstyle.
+    // Hair is positioned outside the head geometry; it never covers facial features.
+    const shortSides = new Set(['buzz','fade','crop']);
+    const sideLength = shortSides.has(s.hairstyle) ? .26*H : .46*H;
+    const backLength = ['long','mullet','flowing','locs'].includes(s.hairstyle) ? .70*H : .38*H;
+    add('hair_rear_coverage',0,headY+.26*H,headZ-hd*.51,hw*.94,backLength,.11*H,shade(hair,-.035),'hair');
+    [-1,1].forEach(side=>add('hair_temples_coverage_'+side,side*hw*.51,headY+.30*H,headZ-.03,.105*H,sideLength,hd*.72,shade(hair,-.015),'hair'));
     if(s.hairstyle==='buzz'){
       add('buzz_top',0,topY+.015,headZ,.90*hw,.12*H,.94*hd,hair,'hair');
     } else if(s.hairstyle==='crop'){
