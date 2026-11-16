@@ -479,3 +479,54 @@ body{font-size:16px;background:radial-gradient(ellipse at 50% -12%,#fff 0,#F4F8F
 .name-validation-message{display:block;margin-top:6px;color:#a32a24;font-size:12px;line-height:1.4;font-weight:500;}
 .name-validation-message:empty{display:none;}
 .name-field .text-input[aria-invalid="true"]{border-color:#b43a34;box-shadow:0 0 0 2px rgba(180,58,52,.10);}
+
+/* V22 optional customization discovery — scoped to studio controls. */
+.customization-spotlight[hidden]{display:none!important}
+.customization-spotlight{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;margin:12px 14px 4px;border:1px solid #9fc8ec;border-left:5px solid #0A4D91;border-radius:12px;background:#eff7ff;color:#0A355D;font-family:'ZF Prometo',Arial,sans-serif}
+.customization-spotlight-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.customization-spotlight-copy strong{font-size:16px;font-weight:500}
+.customization-spotlight-copy span{font-size:13px;line-height:1.4}
+.customization-spotlight .button{flex-shrink:0;border-color:#0A4D91;color:#0A4D91;background:#fff;font-size:13px;font-weight:500;padding:11px 13px}
+.control-panel.customization-attention{border-color:#6baee4;box-shadow:0 0 0 3px rgba(10,77,145,.10),var(--shadow)}
+@media(max-width:760px){.customization-spotlight{flex-direction:column;align-items:stretch;margin:10px 10px 0}.customization-spotlight .button{width:100%}}
+
+/* V22 RIGHT-HAND CHARACTER STUDIO: keeps all original controls and functions. */
+#studio-grid:not(.message-active),#studio-grid.message-active{
+  display:grid;grid-template-columns:minmax(0,1.7fr) minmax(330px,1fr);
+  gap:20px;align-items:start;
+}
+#studio-grid[hidden]{display:none!important}
+#studio-grid>.stage-column{grid-column:1;grid-row:1;min-width:0}
+#studio-grid>.control-panel{grid-column:2;grid-row:1;min-width:0;position:sticky;top:12px;
+  max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;
+  border:2px solid #9fc7e8;box-shadow:0 5px 25px rgba(10,77,145,.10);
+  font-family:'ZF Prometo',Arial,sans-serif}
+#studio-grid>.control-panel .panel-heading{align-items:flex-start;gap:10px;padding:21px 19px 15px;
+  background:linear-gradient(120deg,#edf7ff,#fff)}
+#studio-grid>.control-panel .panel-heading h2{font:500 21px/1.2 'ZF Prometo',Arial,sans-serif;
+  color:#0A4D91;margin-top:7px}
+#studio-grid>.control-panel .studio-inspector-intro{font:400 13px/1.4 'ZF Prometo',Arial,sans-serif;
+  color:#536d87;margin:8px 0 0}
+#studio-grid>.control-panel .control-section summary{font-family:'ZF Prometo',Arial,sans-serif;
+  font-size:14px;font-weight:500;min-height:50px;padding:12px 0}
+#studio-grid>.control-panel .field-label{font:500 12px/1.45 'ZF Prometo',Arial,sans-serif;
+  margin:12px 0 5px;color:#37516c}
+#studio-grid>.control-panel select,#studio-grid>.control-panel .text-input{font:400 14px/1.25 'ZF Prometo',Arial,sans-serif;
+  min-height:42px;padding:10px 12px}
+#studio-grid>.control-panel .control-note{font:400 12px/1.5 'ZF Prometo',Arial,sans-serif;color:#64788c}
+#studio-grid .customization-spotlight{margin:14px 16px 6px;padding:13px 15px;box-shadow:none}
+#studio-grid .customization-spotlight-copy strong{font:500 16px 'ZF Prometo',Arial,sans-serif}
+#studio-grid .customization-spotlight-copy span{font:400 13px/1.45 'ZF Prometo',Arial,sans-serif}
+#studio-grid .customization-spotlight .button{font:500 13px/1.3 'ZF Prometo',Arial,sans-serif;
+  white-space:normal;text-align:center}
+#studio-grid .customization-attention{border-color:#0A4D91;box-shadow:0 0 0 3px rgba(10,77,145,.11)}
+@media(max-width:1020px){
+ #studio-grid:not(.message-active),#studio-grid.message-active{grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr);gap:13px}
+}
+@media(max-width:760px){
+ #studio-grid:not(.message-active),#studio-grid.message-active{grid-template-columns:minmax(0,1fr);gap:12px}
+ #studio-grid>.stage-column{grid-column:1;grid-row:1}
+ #studio-grid>.control-panel{grid-column:1;grid-row:2;position:static;max-height:none;overflow:visible}
+ #studio-grid .customization-spotlight{flex-direction:column;align-items:stretch}
+ #studio-grid .customization-spotlight .button{width:100%}
+}

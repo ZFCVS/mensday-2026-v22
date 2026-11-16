@@ -295,10 +295,18 @@ function guidePopup(title, message, actionLabel='Continue', onAction=null, secon
 function focusInput(id){const field=$(id);if(field){field.scrollIntoView({behavior:'smooth',block:'center'});field.focus();}}
 function firstUntouchedSlider(){return selectedQualities.find(q=>!scoreTouched.has(q.trait));}
 function promptCustomization(){
-  const panel=$('customization-guide');if(panel)panel.hidden=false;
-  const details=document.querySelector('.control-panel .control-section');
-  if(details)details.open=true;
-  $('studio-grid').scrollIntoView({behavior:'smooth',block:'start'});
+  const control=document.querySelector('.control-panel');
+  const clothing=$('outfit')?.closest('.control-section');
+  if(clothing){
+    document.querySelectorAll('.control-panel .control-section').forEach(section=>{section.open=section===clothing;});
+  }
+  control?.classList.add('customization-attention');
+  if(window.matchMedia('(max-width:760px)').matches){
+    control?.scrollIntoView({behavior:'smooth',block:'start'});
+  }else if(control){
+    control.scrollTo({top:Math.max(0,clothing.offsetTop-control.offsetTop-22),behavior:'smooth'});
+  }
+  $('outfit')?.focus({preventScroll:true});
 }
 function download(blob, filename) {
   const url=URL.createObjectURL(blob), a=document.createElement('a');a.href=url;a.download=filename;
@@ -1277,11 +1285,15 @@ function chooseVariation(variation) {
   $('personality-gate').hidden=true;$('studio-grid').hidden=false;$('studio-actions').hidden=false;$('share-panel').hidden=true;
   $('studio-grid').classList.remove('message-active');undoStack=[];redoStack=[];yaw=0;pitch=.08;zoom=1;syncFrontAngle();setFlowStep(3);
   userCustomizedCharacter=false;
+  const spotlight=$('customization-spotlight');if(spotlight)spotlight.hidden=false;
+  document.querySelector('.control-panel')?.classList.add('customization-attention');
+  $('customization-guide').hidden=true;
   syncControls();draw();
-  if(!customizationGuideShown){
-    customizationGuideShown=true;
-    guidePopup('Make this character your own','Explore the controls on the left: try a hairstyle, outfit, expression, pose or accessory. You can undo changes or restore the original at any time.','Explore customization',()=>{startIntroSpin();promptCustomization();},'Keep this look',()=>{startIntroSpin();$('customization-guide').hidden=true;});
-  }else{startIntroSpin();promptCustomization();}
+  const clothing=$('outfit')?.closest('.control-section');
+  document.querySelectorAll('.control-panel .control-section').forEach(section=>{section.open=section===clothing;});
+  if(!customizationGuideShown){customizationGuideShown=true;}
+  startIntroSpin();
+  $('studio-grid').scrollIntoView?.({behavior:'smooth',block:'start'});
   toast(`${variation.name} selected. Your personality profile is attached.`);
 }
 function showVariations() {
@@ -1338,6 +1350,12 @@ function restoreOriginal(resetCamera = false) {
 function historyUndo(){if(!undoStack.length)return;redoStack.push(clone(state));state=undoStack.pop();syncControls();draw();}
 function historyRedo(){if(!redoStack.length)return;undoStack.push(clone(state));state=redoStack.pop();syncControls();draw();}
 
+function markCustomizationExplored(){
+  if($('studio-grid').hidden)return;
+  userCustomizedCharacter=true;
+  const spotlight=$('customization-spotlight');if(spotlight)spotlight.hidden=true;
+  document.querySelector('.control-panel')?.classList.remove('customization-attention');
+}
 function applyCharacterControl(key,value){
   stopIntroSpin();
   try{
@@ -1348,17 +1366,18 @@ function applyCharacterControl(key,value){
 document.addEventListener('input',event=>{
   const el=event.target,key=el.dataset.key;if(!key)return;
   const value=el.type==='checkbox'?el.checked:el.type==='range'?Number(el.value):el.value;
-  if(!($('studio-grid').hidden))userCustomizedCharacter=true;
+  markCustomizationExplored();
   applyCharacterControl(key,value);
 });
 document.addEventListener('change',event=>{
   const el=event.target,key=el.dataset.key;
-  if(!key){const preset=el.dataset.lookPreset?LOOK_PRESETS[el.value]:null;if(preset){setState(preset);el.value='';}return;}
+  if(!key){const preset=el.dataset.lookPreset?LOOK_PRESETS[el.value]:null;if(preset){markCustomizationExplored();setState(preset);el.value='';}return;}
   const value=el.type==='checkbox'?el.checked:el.type==='range'?Number(el.value):el.value;
-  if(!($('studio-grid').hidden))userCustomizedCharacter=true;
+  markCustomizationExplored();
   applyCharacterControl(key,value);
 });
-document.querySelectorAll('[data-skin]').forEach(button=>button.addEventListener('click',()=>{userCustomizedCharacter=true;setState({skin:button.dataset.skin});}));
+document.querySelectorAll('[data-skin]').forEach(button=>button.addEventListener('click',()=>{markCustomizationExplored();setState({skin:button.dataset.skin});}));
+$('explore-customization').addEventListener('click',promptCustomization);
  $('heroIdentity').addEventListener('change',event=>{
   const hero=heroVariationsForCurrentFigure().find(candidate=>candidate.id===event.target.value);
   if(!hero)return;
@@ -1385,19 +1404,14 @@ $('show-other-gallery').addEventListener('click',()=>{activeVariationGallery=act
 $('choose-another').addEventListener('click',showVariations);
 function proceedToMessage(){
   $('studio-grid').hidden=true;$('studio-actions').hidden=true;$('share-panel').hidden=false;
+  document.querySelector('.control-panel')?.classList.remove('customization-attention');
   $('share-recipient-display').textContent=recipientName;$('share-sender-display').textContent=senderName;
   startCardPreview();
   setFlowStep(4);
   draw();
   refreshShareQr();$('share-panel').scrollIntoView?.({behavior:'smooth',block:'start'});$('greeting').focus();
 }
-$('continue-message').addEventListener('click',()=>{
-  if(!userCustomizedCharacter){
-    guidePopup('Try the character controls','You haven’t tried the customization options on the left yet. Change at least one hairstyle, expression, outfit, pose or accessory to see what is possible. If you like this look already, you can continue unchanged.','Try customization',promptCustomization,'Continue unchanged',proceedToMessage);
-    return;
-  }
-  proceedToMessage();
-});
+$('continue-message').addEventListener('click',proceedToMessage);
 $('back-to-customize').addEventListener('click',()=>{
   $('share-panel').hidden=true;$('studio-grid').hidden=false;$('studio-actions').hidden=false;stopCardPreview();setFlowStep(3);
   $('studio-grid').scrollIntoView?.({behavior:'smooth',block:'start'});
