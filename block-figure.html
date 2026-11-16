@@ -71,7 +71,7 @@
       <p class="mobile-share-intro" id="mobile-share-intro">A character card made with appreciation.</p>
       <div class="mobile-share-card"><canvas id="mobile-card-preview" width="1080" height="1512" aria-label="Personalized ZF International Men’s Day card"></canvas></div>
       <p class="mobile-share-note" id="mobile-share-note">The card data is carried in this link. It is not uploaded to a third party.</p>
-      <div class="mobile-share-actions"><button class="button primary" id="mobile-download-card" type="button" disabled>Download image to phone</button><button class="button secondary" id="mobile-share-card" type="button" disabled>Share card</button><button class="button secondary" id="mobile-copy-share-link" type="button">Copy card link ↗</button><button class="button secondary" id="create-for-others" type="button">Create a card for someone else</button></div>
+      <div class="mobile-share-actions"><button class="button primary" id="mobile-download-card" type="button" disabled>Download Image</button><button class="button secondary" id="mobile-share-card" type="button" disabled>Share card</button><button class="button secondary" id="mobile-copy-share-link" type="button">Copy card link ↗</button><button class="button secondary" id="create-for-others" type="button">Create a card for someone else</button></div>
     </section>
 
     <div class="flow-steps" id="creation-progress" aria-label="Character creation steps"><span class="current" aria-current="step">01 <b>Names & qualities</b></span><span>02 <b>Rate qualities</b></span><span>03 <b>Choose character</b></span><span>04 <b>Customize</b></span><span>05 <b>Share card</b></span></div>
@@ -128,9 +128,24 @@
     </section>
 
     <div class="studio-grid" id="studio-grid" hidden>
-      <aside class="panel control-panel" aria-label="Character customization controls">
+      <section class="stage-column" aria-label="Character preview">
+        <div class="stage-card">
+          <div class="stage-toolbar"><div><span class="eyebrow">LIVE FIGURE PREVIEW</span><strong id="figure-name">Brightforge</strong></div><span class="mesh-indicator"><i></i> <span id="part-count">0</span> editable parts</span></div>
+          <div class="canvas-frame" id="canvas-frame"><canvas id="figure-canvas" aria-label="Rendered 3D block figure, drag to rotate"></canvas><div class="canvas-caption"><span>↔ Drag to rotate</span><span id="pose-caption">WAVE HELLO</span></div></div>
+          <div class="angle-tools" role="group" aria-label="Camera angle"><button type="button" data-angle="0">Front</button><button type="button" data-angle="0.42" class="active">3/4</button><button type="button" data-angle="1.57">Side</button><button type="button" data-angle="3.14">Back</button><button type="button" id="png-button" class="download-mini">Save PNG ↓</button></div>
+          <div id="customization-spotlight" class="customization-spotlight" hidden aria-label="Optional character customization">
+            <div class="customization-spotlight-copy"><strong>Try a different look</strong><span>Explore clothing, hairstyles, expressions and poses in the panel on the right. Completely optional.</span></div>
+            <button type="button" id="explore-customization" class="button secondary">Explore customization →</button>
+          </div>
+          <div class="art-direction-note"><span>REFERENCE STYLE</span><p>Block-toy proportions, bold brows, expressive mouths and mix-and-match styling follow the latest character references.</p></div>
+        </div>
+        <div class="engine-row"><div class="engine-icon">▧</div><div><strong>Editable geometry</strong><span>Face, hair, beard, clothing, hands and accessories rebuild as separate parts.</span></div><button type="button" class="text-button" id="mesh-button">Export OBJ + MTL ↗</button></div>
+        <button class="button primary full-button" id="continue-message" type="button">Review card & share →</button>
+      </section>
+
+      <aside class="panel control-panel" aria-label="Customize your character, right-side editing panel">
         <div id="customization-guide" class="customization-guide" hidden role="status"><strong>Try a few looks.</strong> Open a section below and change a hairstyle, outfit, pose or accessory. Your personality scores stay attached. You can undo or reset changes.</div>
-        <div class="panel-heading"><div><span class="eyebrow">BUILD HIS LOOK</span><h2>Customize</h2></div><span class="live-tag"><i></i> Live</span></div>
+        <div class="panel-heading"><div><span class="eyebrow">YOUR CHARACTER STUDIO</span><h2>Customize your character</h2><p class="studio-inspector-intro">Change any detail. Your preview updates instantly.</p></div><span class="live-tag"><i></i> Live</span></div>
         <details class="control-section" data-exclusive-accordion><summary><span class="section-number">01</span><span>Identity</span><span class="chevron">⌄</span></summary>
           <label class="field-label" for="name">Character name</label><input id="name" class="text-input" data-key="name" maxlength="40" value="Brightforge">
           <label class="field-label" for="tagline">Personality tagline</label><input id="tagline" class="text-input" data-key="tagline" maxlength="130" value="Shows up. Sparks ideas. Brings everyone forward.">
@@ -169,8 +184,9 @@
         </details>
 
         <details class="control-section" data-exclusive-accordion><summary><span class="section-number">04</span><span>Clothing</span><span class="chevron">⌄</span></summary>
-          <label class="field-label" for="outfit-preset">Curated outfit combination</label><select id="outfit-preset" data-look-preset><option value="">Choose a coordinated look</option><option value="zf-white">ZF white polo · casual sling</option><option value="zf-navy">ZF navy polo · smart commute</option><option value="office-smart">Office smart</option><option value="weekend-denim">Weekend denim</option><option value="creative-layer">Creative layers</option></select>
           <label class="field-label" for="outfit">Top style</label><select id="outfit" data-key="outfit"><option value="tee">T-shirt</option><option value="overshirt" selected>Layered overshirt</option><option value="casual-shirt">Casual button-down</option><option value="sweater">Crew-neck sweater</option><option value="cardigan">Open cardigan</option><option value="denim-jacket">Denim jacket</option><option value="zip-jacket">Zip jacket</option><option value="hoodie">Hoodie</option><option value="bomber">Bomber jacket</option><option value="blazer">Smart blazer</option><option value="utility">Utility vest</option><option value="jersey">Team jersey</option><option value="zf-polo-white">ZF polo — white · blue chest logo</option><option value="zf-polo-navy">ZF polo — navy · white chest logo</option><option value="traditional-kurta">Traditional kurta</option></select>
+          <p class="control-note" id="outfit-preset-note">Choose a top style above. For a complete coordinated look, select a curated combination below; it will update the top and matching accessories.</p>
+          <label class="field-label" for="outfit-preset">Curated outfit combination</label><select id="outfit-preset" data-look-preset><option value="">Choose a coordinated look</option><option value="zf-white">ZF white polo · casual sling</option><option value="zf-navy">ZF navy polo · smart commute</option><option value="office-smart">Office smart</option><option value="weekend-denim">Weekend denim</option><option value="creative-layer">Creative layers</option></select>
           <p class="control-note">The official logo is fixed on the left chest: blue on the white polo and white on the navy polo.</p>
           <div class="field-pair color-pair"><div><label class="field-label" for="topColor">Main colour</label><input id="topColor" data-key="topColor" type="color" value="#176A76"><small id="top-color-note" class="control-note">Choose a fabric colour.</small></div><div><label class="field-label" for="accentColor">Accent colour</label><input id="accentColor" data-key="accentColor" type="color" value="#F17B63"></div></div>
           <label class="field-label" for="bottoms">Bottoms</label><select id="bottoms" data-key="bottoms"><option value="jeans">Denim jeans</option><option value="cargo" selected>Cargo trousers</option><option value="chinos">Chinos</option><option value="formal-trousers">Formal trousers</option><option value="joggers">Joggers</option><option value="track-pants">Track pants</option><option value="shorts">Shorts</option></select>
@@ -218,17 +234,6 @@
           <p class="control-note">Create a smooth loop with the original bus or truck artwork fixed in place while the asphalt texture and road markings move beneath it. The turbine blades keep turning.</p>
         </details>
       </aside>
-
-      <section class="stage-column" aria-label="Character preview">
-        <div class="stage-card">
-          <div class="stage-toolbar"><div><span class="eyebrow">LIVE FIGURE PREVIEW</span><strong id="figure-name">Brightforge</strong></div><span class="mesh-indicator"><i></i> <span id="part-count">0</span> editable parts</span></div>
-          <div class="canvas-frame" id="canvas-frame"><canvas id="figure-canvas" aria-label="Rendered 3D block figure, drag to rotate"></canvas><div class="canvas-caption"><span>↔ Drag to rotate</span><span id="pose-caption">WAVE HELLO</span></div></div>
-          <div class="angle-tools" role="group" aria-label="Camera angle"><button type="button" data-angle="0">Front</button><button type="button" data-angle="0.42" class="active">3/4</button><button type="button" data-angle="1.57">Side</button><button type="button" data-angle="3.14">Back</button><button type="button" id="png-button" class="download-mini">Save PNG ↓</button></div>
-          <div class="art-direction-note"><span>REFERENCE STYLE</span><p>Block-toy proportions, bold brows, expressive mouths and mix-and-match styling follow the latest character references.</p></div>
-        </div>
-        <div class="engine-row"><div class="engine-icon">▧</div><div><strong>Editable geometry</strong><span>Face, hair, beard, clothing, hands and accessories rebuild as separate parts.</span></div><button type="button" class="text-button" id="mesh-button">Export OBJ + MTL ↗</button></div>
-        <button class="button primary full-button" id="continue-message" type="button">Review card & share →</button>
-      </section>
     </div>
 
     <section class="delivery-page panel" id="share-panel" aria-label="Review and share the finished card" hidden>
