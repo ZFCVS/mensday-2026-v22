@@ -1,0 +1,12 @@
+V22 Inclusive Appreciation homepage update
+
+REPLACE ONLY: index.html at the ROOT of repository ZFCVS/mensday-inclusive-2026
+
+Changes:
+- "International Men’s Day 2026" is now smaller: desktop up to 46px, mobile up to 36px.
+- "The Future Is Everyone." is larger and visually prominent: desktop up to 52px, mobile up to 40px.
+- Existing CTA wording "Create an appreciation card" is already correct and remains unchanged.
+- Existing links, layout, branding and all other site files remain unchanged.
+
+To install: GitHub > mensday-inclusive-2026 > index.html > Edit > replace entire file with supplied index.html > Commit changes.
+After deployment, hard refresh (Ctrl+Shift+R) or use InPrivate mode.
